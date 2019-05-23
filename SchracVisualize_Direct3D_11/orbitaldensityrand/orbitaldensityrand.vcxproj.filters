@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="getdata">
+      <UniqueIdentifier>{1279ca56-e6ac-46b2-92e5-f0280833c033}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utility">
+      <UniqueIdentifier>{8dcc6f9e-dac3-49bf-a103-560660e3e2c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="myrandsfmt">
+      <UniqueIdentifier>{5683dd95-6056-498f-80f4-58d6af22752d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SFMT-src-1.5.1">
+      <UniqueIdentifier>{acc6c61e-8b52-444a-a846-76f20aa25e9a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="getdata\deleter.h">
+      <Filter>getdata</Filter>
+    </ClInclude>
+    <ClInclude Include="getdata\getdata.h">
+      <Filter>getdata</Filter>
+    </ClInclude>
+    <ClInclude Include="getdata\readdatafile.h">
+      <Filter>getdata</Filter>
+    </ClInclude>
+    <ClInclude Include="utility\property.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="utility\utility.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="myrandom\myrandsfmt.h">
+      <Filter>myrandsfmt</Filter>
+    </ClInclude>
+    <ClInclude Include="SFMT-src-1.5.1\SFMT.h">
+      <Filter>SFMT-src-1.5.1</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="getdata\getdata.cpp">
+      <Filter>getdata</Filter>
+    </ClCompile>
+    <ClCompile Include="getdata\readdatafile.cpp">
+      <Filter>getdata</Filter>
+    </ClCompile>
+    <ClCompile Include="utility\utility.cpp">
+      <Filter>utility</Filter>
+    </ClCompile>
+    <ClCompile Include="SFMT-src-1.5.1\SFMT.c">
+      <Filter>SFMT-src-1.5.1</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
