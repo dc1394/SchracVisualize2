@@ -1,18 +1,15 @@
 ﻿/*! \file getdata.h
-\brief rのメッシュと、そのメッシュにおける電子密度を与えるクラスの実装
+    \brief rのメッシュと、そのメッシュにおける電子密度を与えるクラスの実装
 
-Copyright © 2015 @dc1394 All Rights Reserved.
-This software is released under the BSD 2-Clause License.
+    Copyright © 2015-2019 @dc1394 All Rights Reserved.
+    This software is released under the BSD 2-Clause License.
 */
 
-#include "DXUT.h"
 #include "getdata.h"
 #include "readdatafile.h"
 #include <stdexcept>                    // for std::runtime_error
-#include <tuple>                        // for std::tie
 #include <boost/algorithm/string.hpp>   // for boost::algorithm
 #include <boost/assert.hpp>             // for BOOST_ASSERT
-#include <boost/cast.hpp>               // for boost::cast
 #include <boost/range/algorithm.hpp>    // for boost::max_element
 
 namespace getdata {
@@ -90,8 +87,7 @@ namespace getdata {
             break;
         }
 
-        std::vector<double> r_mesh, phi;
-        std::tie(r_mesh, phi) = ReadDataFile().readdatafile(filename);
+        auto const [r_mesh, phi] = ReadDataFile().readdatafile(filename);
 
         BOOST_ASSERT(r_mesh.size() == phi.size());
 

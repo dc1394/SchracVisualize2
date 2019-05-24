@@ -15,22 +15,22 @@
 namespace orbitaldensityrand {
 	//float const OrbitalDensityRand::MAGNIFICATION = 1.2f;
 
-	OrbitalDensityRand::OrbitalDensityRand(std::shared_ptr<getdata::GetData> const & pgd) :
-		Complete([this]{ return complete_.load(); }, nullptr),
-		Pth([this]{ return std::cref(pth_); }, nullptr),
-		Redraw(nullptr, [this](bool redraw){ return redraw_ = redraw; }),
-		Thread_end(nullptr, [this](bool thread_end){ 
-			thread_end_.store(thread_end);
-			return thread_end; }),
-        Vertices([this] { return std::cref(vertices_); }, nullptr),
-		Vertexsize([this]{ return vertexsize_.load(); }, [this](std::vector<SimpleVertex>::size_type size) { 
+	OrbitalDensityRand::OrbitalDensityRand(std::shared_ptr<getdata::GetData> const & pgd)
+        :   Complete([this]{ return complete_.load(); }, nullptr),
+		    Pth([this]{ return std::cref(pth_); }, nullptr),
+		    Redraw(nullptr, [this](bool redraw){ return redraw_ = redraw; }),
+		    Thread_end(nullptr, [this](bool thread_end){ 
+			    thread_end_.store(thread_end);
+			    return thread_end; }),
+            Vertices([this] { return std::cref(vertices_); }, nullptr),
+		    Vertexsize([this]{ return vertexsize_.load(); }, [this](std::vector<SimpleVertex>::size_type size) { 
 				vertexsize_.store(size);
 				return size; }),
-		pgd_(pgd),
-		rmax_(GetRmax(pgd)),
-		vertices_(VERTEXSIZE_FIRST)
+            pgd_(pgd),
+		    rmax_(GetRmax(pgd)),
+		    vertices_(VERTEXSIZE_INIT_VALUE)
     {
-	}
+    }
 
     void OrbitalDensityRand::RedrawFunc(std::int32_t m, OrbitalDensityRand::Re_Im_type reim)
     {
@@ -39,23 +39,25 @@ namespace orbitaldensityrand {
                 vertices_.resize(vertexsize_);
             }
 
-            ClearFillSimpleVertex2(m, reim);
+            //ClearFillSimpleVertex(m, reim);
 
-            //pth_.reset(new std::thread([this, m, reim] { ClearFillSimpleVertex2(m, reim); }), [this](std::thread * pth)
-            //{
-            //    if (pth->joinable()) {
-            //        thread_end_.store(true);
-            //        pth->join();
-            //    }
+            pth_.reset(new std::thread([this, m, reim] { ClearFillSimpleVertex(m, reim); }), [this](std::thread * pth)
+            {
+                if (pth->joinable()) {
+                    thread_end_.store(true);
+                    pth->join();
+                }
 
-            //    utility::Safe_Delete<std::thread> sd;
-            //    sd(pth);
-            //});
+                utility::Safe_Delete<std::thread> sd;
+                sd(pth);
+            });
             redraw_ = false;
         }
+
+        auto a = 1;
     }
 
-	void OrbitalDensityRand::ClearFillSimpleVertex2(std::int32_t m, OrbitalDensityRand::Re_Im_type reim)
+	void OrbitalDensityRand::ClearFillSimpleVertex(std::int32_t m, OrbitalDensityRand::Re_Im_type reim)
 	{
 		complete_.store(false);
 
@@ -76,7 +78,7 @@ namespace orbitaldensityrand {
 	}
 
 
-	void OrbitalDensityRand::FillSimpleVertex(std::int32_t m, OrbitalDensityRand::Re_Im_type reim, SimpleVertex & ver)
+	void OrbitalDensityRand::FillSimpleVertex(std::int32_t m, OrbitalDensityRand::Re_Im_type reim, SimpleVertex & ver) const
 	{
 		if (thread_end_) {
 			return;

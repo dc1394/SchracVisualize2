@@ -1,7 +1,7 @@
 ﻿/*! \file utility.h
     \brief ユーティリティ関数の宣言と実装
 
-    Copyright ©  2015 @dc1394 All Rights Reserved.
+    Copyright © 2015-2019 @dc1394 All Rights Reserved.
     This software is released under the BSD 2-Clause License.
 */
 
@@ -10,12 +10,10 @@
 
 #pragma once
 
-#include <array>                // for std::array
-#include <cstdint>              // for std::int32_t
-#include <string>               // for std::wstring
-#include <boost/cast.hpp>       // for boost::numeric_cast
-#include <boost/optional.hpp>   // for boost::optional
-#include <boost/utility.hpp>    // for boost::checked_delete
+#include <array>        // for std::array
+#include <cstdint>      // for std::int32_t
+#include <string>       // for std::wstring
+#include <Windows.h>
 
 namespace utility {
     //! A function.
@@ -53,17 +51,7 @@ namespace utility {
         \param defextension デフォルトのファイルの種類
         \return ファイル選択ダイアログの戻り値
     */
-    BOOL showFileDialog(HWND hWnd, wchar_t * filepath, wchar_t * filename, wchar_t * title, wchar_t * defextension);
-
-    template <typename T>
-    //! A function.
-    /*!
-        関数が成功したかどうかを判断する
-        \tparam T 関数の戻り値の型
-        \param x HRESULTの値
-        \return 成功したらboost::optional<HRESULT>、失敗したらboost::none
-    */
-    boost::optional<HRESULT> v_return(T const & x);
+    BOOL showFileDialog(HWND hWnd, wchar_t * filepath, wchar_t * filename, wchar_t const * title, wchar_t const * defextension);
 
     template <typename T>
     //! A struct.
@@ -99,17 +87,11 @@ namespace utility {
         */
         void operator()(T * p) {
             if (p) {
-                boost::checked_delete(p);
+                delete p;
                 p = nullptr;
             }
         }
     };
-
-    template <typename T> boost::optional<HRESULT> v_return(T const & x)
-    {
-        auto const hr = boost::numeric_cast<HRESULT>(x);
-        return hr >= 0 ? boost::optional<HRESULT>(hr) : boost::none;
-    }
 }
 
 #endif  // _UTILITY_H_

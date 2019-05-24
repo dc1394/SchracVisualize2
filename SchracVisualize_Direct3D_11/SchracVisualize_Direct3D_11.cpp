@@ -34,11 +34,6 @@ using namespace orbitaldensityrand;
 // Structures
 //--------------------------------------------------------------------------------------
 
-struct CBNeverChanges
-{
-	XMFLOAT4 vLightDir;
-};
-
 struct CBChangesEveryFrame
 {
 	XMFLOAT4X4 mWorld;
@@ -56,12 +51,6 @@ struct CBChangesEveryFrame2
 //--------------------------------------------------------------------------------------
 // Global Variables
 //--------------------------------------------------------------------------------------
-
-//! A global variable (constant).
-/*!
-	ライトの方向
-*/
-static XMVECTORF32 constexpr LIGHTDIR = { -0.577f, 0.577f, -0.577f, 0.0f };
 
 //! A global variable (constant).
 /*!
@@ -89,7 +78,7 @@ std::shared_ptr<getdata::GetData> pgd;
 
 //! A global variable.
 /*!
-    分子動力学シミュレーションのオブジェクト
+    軌道・電子密度の乱数生成クラスのオブジェクト
 */
 std::optional<OrbitalDensityRand> podr;
 
@@ -113,6 +102,23 @@ CDXUTDialogResourceManager dialogResourceManager;
 
 //! A global variable.
 /*!
+    バッファーリソース
+*/
+D3D11_BUFFER_DESC g_bd;
+
+//! A global variable.
+/*!
+    バッファーリソース2
+*/
+D3D11_BUFFER_DESC g_bd2;
+
+//! A global variable.
+/*!
+*/
+std::vector<std::int32_t> indices;
+
+//! A global variable.
+/*!
 	manages the 3D UI
 */
 CDXUTDialog hud;
@@ -120,7 +126,7 @@ CDXUTDialog hud;
 //! A global variable.
 /*!
 */
-Microsoft::WRL::ComPtr<ID3D11Buffer> pCBChangesEveryFrame_Box;
+Microsoft::WRL::ComPtr<ID3D11Buffer> pCBChangesEveryFrame;
 
 //! A global variable.
 /*!
@@ -204,6 +210,19 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 
 //! A function.
 /*!
+    描画する
+    \param pd3dImmediateContext Direct3Dのデバイスコンテキスト
+*/
+HRESULT OnRender(ID3D11DeviceContext* pd3dImmediateContext);
+
+//! A function.
+/*!
+    初期化する
+*/
+HRESULT OnInit(ID3D11Device* pd3dDevice);
+
+//! A function.
+/*!
     テキストファイルからデータを読み込む
 */
 void ReadData();
@@ -215,17 +234,10 @@ void RenderText();
 
 //! A function.
 /*!
-	箱を描画する
+	点を描画する
 	\param pd3dDevice Direct3Dのデバイス
 */
-HRESULT RenderBox(ID3D11Device* pd3dDevice);
-
-//! A function.
-/*!
-	箱を描画する
-	\param pd3dImmediateContext Direct3Dのデバイスコンテキスト
-*/
-HRESULT OnRender(ID3D11DeviceContext* pd3dImmediateContext);
+HRESULT RenderPoint(ID3D11Device* pd3dDevice);
 
 //! A function.
 /*!
@@ -247,7 +259,7 @@ void InitApp()
 
     ReadData();
     podr.emplace(pgd);
-	SetUI();
+    SetUI();
 }
 
 
@@ -357,14 +369,8 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	// Create the pixel shader
 	hr = pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, pPixelShaderBox.GetAddressOf());
 	pPSBlob.Reset();
-	if (FAILED(hr)) {
-		return hr;
-	}
 
-	hr = RenderBox(pd3dDevice);
-	if (FAILED(hr)) {
-		return hr;
-	}
+    OnInit(pd3dDevice);
 
 	// Set vertex buffer
 	UINT const stride = sizeof(SimpleVertex);
@@ -384,7 +390,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     bd.ByteWidth = sizeof(CBChangesEveryFrame);
-    V_RETURN( pd3dDevice->CreateBuffer( &bd, nullptr, pCBChangesEveryFrame_Box.GetAddressOf() ) );
+    V_RETURN( pd3dDevice->CreateBuffer( &bd, nullptr, pCBChangesEveryFrame.GetAddressOf() ) );
 
 	// Setup the camera's view parameters
 	static const XMVECTORF32 s_vecEye = { 0.0f, 5.0f, 5.0f, 0.0f };
@@ -409,7 +415,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	pPixelShaderBox.Reset();
 	SAFE_DELETE(pIndexBuffer);
 	pCBNeverChanges.Reset();
-	pCBChangesEveryFrame_Box.Reset();
+	pCBChangesEveryFrame.Reset();
 }
 
 
@@ -428,7 +434,7 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 		return;
 	}
 
-	RenderBox(pd3dDevice);
+	RenderPoint(pd3dDevice);
 
 	//armd.runCalc();
 
@@ -451,12 +457,12 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 
 	// Update constant buffer that changes once per frame
 	D3D11_MAPPED_SUBRESOURCE MappedResource;
-    auto const hr = pd3dImmediateContext->Map(pCBChangesEveryFrame_Box.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource);
+    auto const hr = pd3dImmediateContext->Map(pCBChangesEveryFrame.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource);
 	auto pCB = reinterpret_cast<CBChangesEveryFrame*>(MappedResource.pData);
 	XMStoreFloat4x4(&pCB->mWorld, XMMatrixTranspose(mWorld));
 	XMStoreFloat4x4(&pCB->mView, XMMatrixTranspose(mView));
 	XMStoreFloat4x4(&pCB->mProjection, XMMatrixTranspose(mProj));
-	pd3dImmediateContext->Unmap(pCBChangesEveryFrame_Box.Get(), 0);
+	pd3dImmediateContext->Unmap(pCBChangesEveryFrame.Get(), 0);
 
 	// Set vertex buffer
 	UINT const stride = sizeof(SimpleVertex);
@@ -473,10 +479,10 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 	// Render the cube
 	//
 	pd3dImmediateContext->VSSetShader(pVertexShaderBox.Get(), nullptr, 0);
-	pd3dImmediateContext->VSSetConstantBuffers(0, 1, pCBChangesEveryFrame_Box.GetAddressOf());
+	pd3dImmediateContext->VSSetConstantBuffers(0, 1, pCBChangesEveryFrame.GetAddressOf());
 	pd3dImmediateContext->PSSetShader(pPixelShaderBox.Get(), nullptr, 0);
-	pd3dImmediateContext->PSSetConstantBuffers(0, 1, pCBChangesEveryFrame_Box.GetAddressOf());
-	pd3dImmediateContext->DrawIndexed(podr->Vertices().size(), 0, 0);
+	pd3dImmediateContext->PSSetConstantBuffers(0, 1, pCBChangesEveryFrame.GetAddressOf());
+	pd3dImmediateContext->DrawIndexed(podr->Vertexsize, 0, 0);
 
     OnRender(pd3dImmediateContext);
 
@@ -599,6 +605,35 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 }
 
 
+HRESULT OnInit(ID3D11Device* pd3dDevice)
+{
+    auto hr = S_OK;
+
+    ZeroMemory(&g_bd, sizeof(g_bd));
+    g_bd.Usage = D3D11_USAGE_DEFAULT;
+    g_bd.ByteWidth = sizeof(SimpleVertex) * podr->Vertexsize;
+    g_bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    g_bd.CPUAccessFlags = 0;
+
+    // Create index buffer
+
+    indices.resize(podr->Vertexsize);
+    std::iota(indices.begin(), indices.end(), 0);
+
+    ZeroMemory(&g_bd2, sizeof(g_bd2));
+    g_bd2.Usage = D3D11_USAGE_DEFAULT;
+    g_bd2.ByteWidth = sizeof(DWORD) * podr->Vertexsize;
+    g_bd2.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    g_bd2.CPUAccessFlags = 0;
+    g_bd2.MiscFlags = 0;
+    D3D11_SUBRESOURCE_DATA InitData;
+    InitData.pSysMem = indices.data();
+    V_RETURN(pd3dDevice->CreateBuffer(&g_bd2, &InitData, &pIndexBuffer));
+
+    return hr;
+}
+
+
 //--------------------------------------------------------------------------------------
 // Handle key presses
 //--------------------------------------------------------------------------------------
@@ -617,75 +652,54 @@ void CALLBACK OnKeyboard( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserC
     }
 }
 
-
-HRESULT RenderBox(ID3D11Device* pd3dDevice)
+HRESULT OnRender(ID3D11DeviceContext* pd3dImmediateContext)
 {
-	auto hr = S_OK;
+    auto hr = S_OK;
 
-	auto const pos = 10.0f;
+    // Get the projection & view matrix from the camera class
+    auto const mProj = camera.GetProjMatrix();
+    auto const mView = camera.GetViewMatrix();
+    auto const mworld = camera.GetWorldMatrix();
+
+    auto const mWorldViewProjection = mworld * mView * mProj;
+
+    // Update constant buffer that changes once per frame
+    D3D11_MAPPED_SUBRESOURCE MappedResource;
+    V(pd3dImmediateContext->Map(pCBChangesEveryFrame.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource));
+    auto pCB = reinterpret_cast<CBChangesEveryFrame2*>(MappedResource.pData);
+    XMStoreFloat4x4(&pCB->mWorldViewProj, XMMatrixTranspose(mWorldViewProjection));
+    XMStoreFloat4x4(&pCB->mWorld, XMMatrixTranspose(mworld));
+
+    pd3dImmediateContext->Unmap(pCBChangesEveryFrame.Get(), 0);
+
+    //
+    // Set the Vertex Layout
+    //
+    pd3dImmediateContext->IASetInputLayout(pVertexLayout.Get());
+
+    pd3dImmediateContext->VSSetConstantBuffers(0, 1, pCBNeverChanges.GetAddressOf());
+    pd3dImmediateContext->VSSetConstantBuffers(1, 1, pCBChangesEveryFrame.GetAddressOf());
+    pd3dImmediateContext->PSSetConstantBuffers(1, 1, pCBChangesEveryFrame.GetAddressOf());
+
+    return hr;
+}
+
+
+HRESULT RenderPoint(ID3D11Device* pd3dDevice)
+{
+    auto hr = S_OK;
 
 	// Create vertex buffer
     podr->RedrawFunc(0, reim);
 
-    D3D11_BUFFER_DESC bd;
-	ZeroMemory(&bd, sizeof(bd));
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(SimpleVertex) * podr->Vertices().size();
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-	D3D11_SUBRESOURCE_DATA InitData;
+    D3D11_SUBRESOURCE_DATA InitData;
 	ZeroMemory(&InitData, sizeof(InitData));
     InitData.pSysMem = podr->Vertices().data();
-	V_RETURN(pd3dDevice->CreateBuffer(&bd, &InitData, pVertexBuffer.ReleaseAndGetAddressOf()));
-
-	// Create index buffer
-	std::vector<std::int32_t> indices(podr->Vertices().size(), 0);
-    std::iota(indices.begin(), indices.end(), 0);
-
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(DWORD) * podr->Vertices().size();
-	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-	bd.MiscFlags = 0;
-	InitData.pSysMem = indices.data();
-	V_RETURN(pd3dDevice->CreateBuffer(&bd, &InitData, &pIndexBuffer));
-
-	return S_OK;
-}
-
-HRESULT OnRender(ID3D11DeviceContext* pd3dImmediateContext)
-{
-	auto hr = S_OK;
-
-	// Get the projection & view matrix from the camera class
-	auto const mProj = camera.GetProjMatrix();
-	auto const mView = camera.GetViewMatrix();
-
-	auto const mworld = camera.GetWorldMatrix();
-	
-	auto const mWorldViewProjection = mworld * mView * mProj;
-
-	// Update constant buffer that changes once per frame
-	D3D11_MAPPED_SUBRESOURCE MappedResource;
-	V(pd3dImmediateContext->Map(pCBChangesEveryFrame_Box.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource));
-	auto pCB = reinterpret_cast<CBChangesEveryFrame2*>(MappedResource.pData);
-	XMStoreFloat4x4(&pCB->mWorldViewProj, XMMatrixTranspose(mWorldViewProjection));
-	XMStoreFloat4x4(&pCB->mWorld, XMMatrixTranspose(mworld));
-
-	pd3dImmediateContext->Unmap(pCBChangesEveryFrame_Box.Get(), 0);
-
-	//
-	// Set the Vertex Layout
-	//
-	pd3dImmediateContext->IASetInputLayout(pVertexLayout.Get());
-
-	pd3dImmediateContext->VSSetConstantBuffers(0, 1, pCBNeverChanges.GetAddressOf());
-	pd3dImmediateContext->VSSetConstantBuffers(1, 1, pCBChangesEveryFrame_Box.GetAddressOf());
-
-	pd3dImmediateContext->PSSetConstantBuffers(1, 1, pCBChangesEveryFrame_Box.GetAddressOf());
-
+	V_RETURN(pd3dDevice->CreateBuffer(&g_bd, &InitData, pVertexBuffer.ReleaseAndGetAddressOf()));
+    	
 	return hr;
 }
+
 
 void ReadData()
 {
@@ -701,6 +715,7 @@ void ReadData()
         break;
     }
 }
+
 
 //--------------------------------------------------------------------------------------
 // Render the help and statistics text.

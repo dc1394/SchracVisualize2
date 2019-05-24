@@ -1,7 +1,7 @@
-﻿/*! \file myrandsfmt.h
-    \brief SFMTを使った自作乱数クラスの宣言
+/*! \file myrandsfmt.h
+    \brief SFMT??????????????
 
-    Copyright © 2017 @dc1394 All Rights Reserved.
+    Copyright � 2017 @dc1394 All Rights Reserved.
     This software is released under the BSD 2-Clause License.
 */
 
@@ -20,110 +20,110 @@
 namespace myrandom {
     //! A class.
     /*!
-        自作乱数クラス
+        ???????
     */
     class MyRandSfmt final {
-        // #region コンストラクタ・デストラクタ
+        // #region ??????????????
 
     public:
         //! A constructor.
         /*!
-            唯一のコンストラクタ
-            \param min 乱数分布の最小値
-            \param max 乱数分布の最大値
+            ??????????
+            \param min ????????
+            \param max ????????
         */
         inline MyRandSfmt(double min, double max);
 
         //! A destructor.
         /*!
-            デフォルトデストラクタ
+            ???????????
         */
         ~MyRandSfmt() = default;
 
-        // #endregion コンストラクタ・デストラクタ
+        // #endregion ??????????????
 
-        // #region メンバ関数
+        // #region ?????
 
         //!  A public member function.
         /*!
-            [min, max]の閉区間で一様乱数を生成する
+            [min, max]??????????????
         */
         double myrand()
         {
             return sfmt_genrand_real1(&sfmt_) * (max_ - min_) + min_;
         }
 
-        // #endregion メンバ関数
+        // #endregion ?????
 
-        // #region メンバ変数
+        // #region ?????
 
     private:
         //! A private static member variable (constant expression).
         /*!
-            初期乱数生成用のstd::vectorのサイズ
+            ????????std::vector????
         */
         static std::vector<std::uint_least32_t>::size_type const SIZE = 1;
 
 		//! A private member variable (constant).
         /*!
-            乱数分布の最大値
+            ????????
         */
         double const max_;
 
 		//! A private member variable (constant).
         /*!
-            乱数分布の最小値
+            ????????
         */
         double const min_;
 
         //! A private member variable.
         /*!
-            乱数エンジン
+            ??????
         */
-		sfmt_t sfmt_;
+		sfmt_t sfmt_{};
 
-        // #region 禁止されたコンストラクタ・メンバ関数
+        // #region ??????????????????
 
     public:
         //! A public constructor (deleted).
         /*!
-        	デフォルトコンストラクタ（禁止）
+        	????????????(??)
         */
         MyRandSfmt() = delete;
 
         //! A public copy constructor (deleted).
         /*!
-            コピーコンストラクタ（禁止）
-            \param dummy コピー元のオブジェクト（未使用）
+            ??????????(??)
+            \param dummy ???????????(???)
         */
         MyRandSfmt(const MyRandSfmt & dummy) = delete;
 
         //! A public member function (deleted).
         /*!
-            operator=()の宣言（禁止）
-            \param dummy コピー元のオブジェクト（未使用）
-            \return コピー元のオブジェクト
+            operator=()???(??)
+            \param dummy ???????????(???)
+            \return ???????????
         */
         MyRandSfmt & operator=(const MyRandSfmt & dummy) = delete;
 
-        // #endregion 禁止されたコンストラクタ・メンバ関数
+        // #endregion ??????????????????
     };
 
     MyRandSfmt::MyRandSfmt(double min, double max)
-    	: max_(max),
-    	  min_(min)
+    	:   max_(max),
+    	    min_(min)
     {
-        // ランダムデバイス
+        // ????????
         std::random_device rnd;
 
-        // 初期化用ベクタ
+        // ???????
         std::vector<std::uint_least32_t> v(SIZE);
 
-        // ベクタの初期化
-        // 非決定的な乱数でシード列を構築する
+        // ???????
+        // ?????????????????
         boost::generate(v, std::ref(rnd));
 
-        // 乱数エンジン
+        // ??????
 		sfmt_init_gen_rand(&sfmt_, v[0]);
     }
 }

@@ -1,11 +1,10 @@
 ﻿/*! \file utility.h
     \brief ユーティリティ関数の実装
 
-    Copyright ©  2015 @dc1394 All Rights Reserved.
+    Copyright © 2015-2019 @dc1394 All Rights Reserved.
     This software is released under the BSD 2-Clause License.
 */
 
-#include "DXUT.h"
 #include "utility.h"
 #include <vector>           // for std::vector
 #include <system_error>     // for std::system_category
@@ -54,7 +53,7 @@ namespace utility {
             throw std::system_error(std::error_code(::GetLastError(), std::system_category()));
         }
 
-        std::array<char, MAX_PATH> mbs;
+        std::array<char, MAX_PATH> mbs{};
 
         // マルチバイトに変換
         ::WideCharToMultiByte(codeMulti, 0, wcs.data(), -1, mbs.data(), sizeMulti, nullptr, nullptr);
@@ -62,9 +61,9 @@ namespace utility {
         return std::string(mbs.data());
     }
 
-    BOOL showFileDialog(HWND hWnd, wchar_t * filepath, wchar_t * filename, wchar_t * title, wchar_t * defextension)
+    BOOL showFileDialog(HWND hWnd, wchar_t * filepath, wchar_t * filename, wchar_t const * title, wchar_t const * defextension)
     {
-        OPENFILENAME ofn = { 0 };
+        OPENFILENAME ofn{};
 
         // 構造体に情報をセット
         ofn.lStructSize = sizeof(ofn);			                                // 構造体のサイズ
