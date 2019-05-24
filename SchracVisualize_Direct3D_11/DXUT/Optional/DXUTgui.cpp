@@ -213,7 +213,7 @@ HRESULT InitFont11( _In_ ID3D11Device* pd3d11Device, _In_ ID3D11InputLayout* pIn
 {
     HRESULT hr = S_OK;
     WCHAR str[MAX_PATH];
-    V_RETURN( DXUTFindDXSDKMediaFileCch( str, MAX_PATH, L"DXUT\\Media\\UI\\Font.dds" ) );
+    V_RETURN( DXUTFindDXSDKMediaFileCch( str, MAX_PATH, L"Font.dds" ) );
     
     V_RETURN( CreateDDSTextureFromFile( pd3d11Device, str, nullptr, &g_pFont11 ) );
 

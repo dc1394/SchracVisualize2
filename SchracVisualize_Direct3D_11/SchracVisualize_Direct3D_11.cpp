@@ -1,4 +1,4 @@
-//--------------------------------------------------------------------------------------
+ï»¿//--------------------------------------------------------------------------------------
 // File: Tutorial08.cpp
 //
 // Basic introduction to DXUT
@@ -18,12 +18,12 @@
 #include "SDKmisc.h"
 #include "orbitaldensityrand/orbitaldensityrand.h"
 #include "orbitaldensityrand/utility/utility.h"
-#include <array>					// for std::array
-#include <numeric>                  // for std::iota
-#include <optional>                 // for std::optional
-#include <boost/cast.hpp>           // for boost::numeric_cast
-#include <boost/format.hpp>			// for boost::wformat
-#include <wrl.h>					// for Microsoft::WRL::ComPtr
+#include <array>					                // for std::array
+#include <numeric>                                  // for std::iota
+#include <optional>                                 // for std::optional
+#include <boost/cast.hpp>                           // for boost::numeric_cast
+#include <boost/format.hpp>			                // for boost::wformat
+#include <wrl.h>					                // for Microsoft::WRL::ComPtr
 
 #pragma warning( disable : 4100 )
 
@@ -59,45 +59,21 @@ struct CBChangesEveryFrame2
 
 //! A global variable (constant).
 /*!
-	” ‚ÌF
-*/
-static XMFLOAT4 constexpr BOXMESHCOLOR = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-//! A global variable (constant).
-/*!
-	F‚Ì”ä—¦
-*/
-static auto constexpr COLORRATIO = 0.025f;
-
-//! A global variable (constant).
-/*!
-	Šiq’è”‚Ì”ä—¦
-*/
-static auto constexpr LATTICERATIO = 50.0;
-
-//! A global variable (constant).
-/*!
-	ƒ‰ƒCƒg‚Ì•ûŒü
+	ãƒ©ã‚¤ãƒˆã®æ–¹å‘
 */
 static XMVECTORF32 constexpr LIGHTDIR = { -0.577f, 0.577f, -0.577f, 0.0f };
 
 //! A global variable (constant).
 /*!
-	‰æ–ÊƒTƒCƒYi‚‚³j
+	ç”»é¢ã‚µã‚¤ã‚ºï¼ˆé«˜ã•ï¼‰
 */
 static auto constexpr WINDOWHEIGHT = 960;
 
 //! A global variable (constant).
 /*!
-	‰æ–ÊƒTƒCƒYi•j
+	ç”»é¢ã‚µã‚¤ã‚ºï¼ˆå¹…ï¼‰
 */
 static auto constexpr WINDOWWIDTH = 1280;
-
-//! A global variable.
-/*!
-	•ªq“®—ÍŠwƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚ÌƒIƒuƒWƒFƒNƒg
-*/
-std::optional<OrbitalDensityRand> podr;
 
 //! A global variable.
 /*!
@@ -107,14 +83,20 @@ CModelViewerCamera camera;
 
 //! A global variable.
 /*!
-    ƒf[ƒ^ƒIƒuƒWƒFƒNƒg
+    ãƒ‡ãƒ¼ã‚¿ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
 */
 std::shared_ptr<getdata::GetData> pgd;
 
+//! A global variable.
+/*!
+    åˆ†å­å‹•åŠ›å­¦ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
+*/
+std::optional<OrbitalDensityRand> podr;
+
 //! A lambda expression.
 /*!
-	CDXUTTextHelper‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ğ‰ğ•ú‚·‚éƒ‰ƒ€ƒ_®
-	\param spline CDXUTTextHelper‚Ö‚Ìƒ|ƒCƒ“ƒ^
+	CDXUTTextHelperã¸ã®ãƒã‚¤ãƒ³ã‚¿ã‚’è§£æ”¾ã™ã‚‹ãƒ©ãƒ ãƒ€å¼
+	\param spline CDXUTTextHelperã¸ã®ãƒã‚¤ãƒ³ã‚¿
 */
 static auto const deleter = [](auto ptxthelper) {
 	if (ptxthelper) {
@@ -137,18 +119,6 @@ CDXUTDialog hud;
 
 //! A global variable.
 /*!
-	Šiq’è”‚ª•ÏX‚³‚ê‚½‚±‚Æ‚ğ’Ê’m‚·‚éƒtƒ‰ƒO
-*/
-bool modLatconst = false;
-
-//! A global variable.
-/*!
-	ƒX[ƒp[ƒZƒ‹‚ª•ÏX‚³‚ê‚½‚±‚Æ‚ğ’Ê’m‚·‚éƒtƒ‰ƒO
-*/
-bool modNc = false;
-
-//! A global variable.
-/*!
 */
 Microsoft::WRL::ComPtr<ID3D11Buffer> pCBChangesEveryFrame_Box;
 
@@ -159,25 +129,25 @@ Microsoft::WRL::ComPtr<ID3D11Buffer> pCBNeverChanges;
 
 //! A global variable.
 /*!
-	ƒCƒ“ƒfƒbƒNƒXƒoƒbƒtƒ@
+	ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒãƒƒãƒ•ã‚¡
 */
 ID3D11Buffer* pIndexBuffer;
 
 //! A global variable.
 /*!
-	ƒsƒNƒZƒ‹ƒVƒF[ƒ_[
+	ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
 */
 Microsoft::WRL::ComPtr<ID3D11PixelShader> pPixelShaderBox;
 
 //! A global variable.
 /*!
-	ƒeƒLƒXƒg•\¦—p
+	ãƒ†ã‚­ã‚¹ãƒˆè¡¨ç¤ºç”¨
 */
 std::unique_ptr<CDXUTTextHelper, decltype(deleter)> pTxtHelper(nullptr, deleter);
 
 //! A global variable.
 /*!
-	’¸“_ƒoƒbƒtƒ@
+	é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡
 */
 Microsoft::WRL::ComPtr<ID3D11Buffer> pVertexBuffer;
 
@@ -188,7 +158,7 @@ Microsoft::WRL::ComPtr<ID3D11InputLayout> pVertexLayout;
 
 //! A global variable.
 /*!
-	ƒo[ƒeƒbƒNƒXƒVƒF[ƒ_[
+	ãƒãƒ¼ãƒ†ãƒƒã‚¯ã‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
 */
 Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShaderBox;
 
@@ -206,7 +176,7 @@ CDXUTDialog ui;
 
 //! A global variable.
 /*!
-    À•”‚Æ‹••”‚Ì‚Ç‚¿‚ç‚ğ•`‰æ‚·‚é‚©
+    å®Ÿéƒ¨ã¨è™šéƒ¨ã®ã©ã¡ã‚‰ã‚’æç”»ã™ã‚‹ã‹
 */
 auto reim = OrbitalDensityRand::Re_Im_type::REAL;
 
@@ -234,7 +204,7 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 
 //! A function.
 /*!
-    ƒeƒLƒXƒgƒtƒ@ƒCƒ‹‚©‚çƒf[ƒ^‚ğ“Ç‚İ‚Ş
+    ãƒ†ã‚­ã‚¹ãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã‚€
 */
 void ReadData();
 
@@ -245,15 +215,15 @@ void RenderText();
 
 //! A function.
 /*!
-	” ‚ğ•`‰æ‚·‚é
-	\param pd3dDevice Direct3D‚ÌƒfƒoƒCƒX
+	ç®±ã‚’æç”»ã™ã‚‹
+	\param pd3dDevice Direct3Dã®ãƒ‡ãƒã‚¤ã‚¹
 */
 HRESULT RenderBox(ID3D11Device* pd3dDevice);
 
 //! A function.
 /*!
-	” ‚ğ•`‰æ‚·‚é
-	\param pd3dImmediateContext Direct3D‚ÌƒfƒoƒCƒXƒRƒ“ƒeƒLƒXƒg
+	ç®±ã‚’æç”»ã™ã‚‹
+	\param pd3dImmediateContext Direct3Dã®ãƒ‡ãƒã‚¤ã‚¹ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆ
 */
 HRESULT OnRender(ID3D11DeviceContext* pd3dImmediateContext);
 
@@ -458,22 +428,14 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 		return;
 	}
 
-	if (modLatconst) {
-		RenderBox(pd3dDevice);
-		modLatconst = false;
-	}
-
-	if (modNc) {
-		RenderBox(pd3dDevice);
-		modNc = false;
-	}
+	RenderBox(pd3dDevice);
 
 	//armd.runCalc();
 
 	//
 	// Clear the back buffer
 	//
-	pd3dImmediateContext->ClearRenderTargetView(DXUTGetD3D11RenderTargetView(), Colors::MidnightBlue);
+	pd3dImmediateContext->ClearRenderTargetView(DXUTGetD3D11RenderTargetView(), Colors::Black);
 
 	//
 	// Clear the depth stencil
@@ -631,7 +593,7 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 	//	break;
 
 	default:
-		BOOST_ASSERT(!"‰½‚©‚ª‚¨‚©‚µ‚¢II");
+		BOOST_ASSERT(!"ä½•ã‹ãŒãŠã‹ã—ã„ï¼ï¼");
 		break;
 	}
 }
@@ -709,7 +671,7 @@ HRESULT OnRender(ID3D11DeviceContext* pd3dImmediateContext)
 	auto pCB = reinterpret_cast<CBChangesEveryFrame2*>(MappedResource.pData);
 	XMStoreFloat4x4(&pCB->mWorldViewProj, XMMatrixTranspose(mWorldViewProjection));
 	XMStoreFloat4x4(&pCB->mWorld, XMMatrixTranspose(mworld));
-	//pCB->vMeshColor = color;
+
 	pd3dImmediateContext->Unmap(pCBChangesEveryFrame_Box.Get(), 0);
 
 	//
@@ -733,7 +695,7 @@ void ReadData()
             pgd = std::make_shared<getdata::GetData>(utility::myOpenFile());
         }
         catch (std::runtime_error const & e) {
-            ::MessageBox(nullptr, utility::my_mbstowcs(e.what()).c_str(), L"ƒGƒ‰[", MB_OK | MB_ICONWARNING);
+            ::MessageBox(nullptr, utility::my_mbstowcs(e.what()).c_str(), L"ã‚¨ãƒ©ãƒ¼", MB_OK | MB_ICONWARNING);
             continue;
         }
         break;
@@ -778,7 +740,7 @@ void SetUI()
 
 	hud.AddButton(IDC_RECALC, L"Recalculation", 35, iY += 34, 125, 22);
 
-	// ‰·“x‚Ì•ÏX
+	// æ¸©åº¦ã®å¤‰æ›´
 	//hud.AddStatic(IDC_OUTPUT, L"Temperture", 20, iY += 34, 125, 22);
 	//hud.GetStatic(IDC_OUTPUT)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
 	//hud.AddSlider(
@@ -791,7 +753,7 @@ void SetUI()
 	//	3000,
 	//	boost::numeric_cast<int>(moleculardynamics::Ar_moleculardynamics::FIRSTTEMP));
 
-	//// Šiq’è”‚Ì•ÏX
+	//// æ ¼å­å®šæ•°ã®å¤‰æ›´
 	//hud.AddStatic(IDC_OUTPUT2, L"Lattice constant", 20, iY += 34, 125, 22);
 	//hud.GetStatic(IDC_OUTPUT2)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
 	//hud.AddSlider(
@@ -804,7 +766,7 @@ void SetUI()
 	//	1000,
 	//	boost::numeric_cast<int>(moleculardynamics::Ar_moleculardynamics::FIRSTSCALE * LATTICERATIO));
 
-	//// ƒX[ƒp[ƒZƒ‹‚ÌŒÂ”‚Ì•ÏX
+	//// ã‚¹ãƒ¼ãƒ‘ãƒ¼ã‚»ãƒ«ã®å€‹æ•°ã®å¤‰æ›´
 	//hud.AddStatic(IDC_OUTPUT3, L"Number of supercell", 20, iY += 34, 125, 22);
 	//hud.GetStatic(IDC_OUTPUT3)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
 	//hud.AddSlider(
@@ -817,13 +779,13 @@ void SetUI()
 	//	16,
 	//	moleculardynamics::Ar_moleculardynamics::FIRSTNC);
 
-	// ƒAƒ“ƒTƒ“ƒuƒ‹‚Ì•ÏX
+	// ã‚¢ãƒ³ã‚µãƒ³ãƒ–ãƒ«ã®å¤‰æ›´
 	hud.AddStatic(IDC_OUTPUT4, L"Ensemble", 20, iY += 40, 125, 22);
 	hud.GetStatic(IDC_OUTPUT4)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
 	hud.AddRadioButton(IDC_RADIOA, 1, L"NVT ensemble", 35, iY += 24, 125, 22, true);
 	hud.AddRadioButton(IDC_RADIOB, 1, L"NVE ensemble", 35, iY += 28, 125, 22, false);
 
-	// ‰·“x§Œä–@‚Ì•ÏX
+	// æ¸©åº¦åˆ¶å¾¡æ³•ã®å¤‰æ›´
 	hud.AddStatic(IDC_OUTPUT4, L"Temperture control", 15, iY += 40, 125, 22);
 	hud.GetStatic(IDC_OUTPUT4)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
 	hud.AddRadioButton(IDC_RADIOC, 2, L"Langevin", 20, iY += 24, 125, 22, false);
@@ -867,12 +829,12 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	InitApp();
 
-	// ƒEƒBƒ“ƒhƒE‚ğ¶¬
+	// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’ç”Ÿæˆ
 	auto const dispx = ::GetSystemMetrics(SM_CXSCREEN);
 	auto const dispy = ::GetSystemMetrics(SM_CYSCREEN);
 	auto const xpos = (dispx - WINDOWWIDTH) / 2;
 	auto const ypos = (dispy - WINDOWHEIGHT) / 2;
-	DXUTCreateWindow( L"ƒAƒ‹ƒSƒ“‚ÌŒÃ“T•ªq“®—ÍŠwƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“", nullptr, nullptr, nullptr, xpos, ypos);
+	DXUTCreateWindow( L"test", nullptr, nullptr, nullptr, xpos, ypos);
 	
     // Only require 10-level hardware or later
     DXUTCreateDevice( D3D_FEATURE_LEVEL_11_0, true, WINDOWWIDTH, WINDOWHEIGHT);

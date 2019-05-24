@@ -1,6 +1,6 @@
 ﻿/*! \file orbitaldensityrand.cpp
     \brief OrbitalDensityRandクラスの実装
-    Copyright ©  2015 @dc1394 All Rights Reserved.
+    Copyright © 2019 @dc1394 All Rights Reserved.
     This software is released under the BSD 2-Clause License.
 */
 
@@ -64,16 +64,13 @@ namespace orbitaldensityrand {
 		sv.Pos = { 0.0f, 0.0f, 0.0f };
 		boost::fill(vertices_, sv);
 
-		//tbb::parallel_for(
-		//	0,
-		//	static_cast<std::int32_t>(vertexsize_.load()),
-		//	1,
-		//	[this, m, reim](std::int32_t i) { FillSimpleVertex(m, reim, vertices_[i]); });
-
-        for (int i = 0; i < vertexsize_.load(); i++)
-        {
-            FillSimpleVertex(m, reim, vertices_[i]);
-        }
+        tbb::parallel_for(
+            tbb::blocked_range<int>(0, static_cast<std::int32_t>(vertexsize_.load())),
+        [this, m, reim](auto const & range) {
+                for (auto && i = range.begin(); i != range.end(); ++i) {
+                    FillSimpleVertex(m, reim, vertices_[i]);
+                }
+            });
 
 		complete_.store(true);
 	}
@@ -176,8 +173,8 @@ namespace orbitaldensityrand {
 		ver.Pos.z = static_cast<float>(z);
 
 		ver.Color.x = sign > 0 ? 0.8f : 0.0f;
-		ver.Color.y = 0.8f;
-		ver.Color.z = sign < 0 ? 0.8f : 0.0f;
+		ver.Color.y = sign < 0 ? 0.8f : 0.0f;
+		ver.Color.z = 0.8f;
 		ver.Color.w = 1.0f;
 	}
 

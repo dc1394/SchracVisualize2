@@ -36,6 +36,7 @@
     <ClInclude Include="SFMT-src-1.5.1\SFMT.h">
       <Filter>SFMT-src-1.5.1</Filter>
     </ClInclude>
+    <ClInclude Include="orbitaldensityrand.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="getdata\getdata.cpp">
@@ -50,5 +51,6 @@
     <ClCompile Include="SFMT-src-1.5.1\SFMT.c">
       <Filter>SFMT-src-1.5.1</Filter>
     </ClCompile>
+    <ClCompile Include="orbitaldensityrand.cpp" />
   </ItemGroup>
 </Project>
