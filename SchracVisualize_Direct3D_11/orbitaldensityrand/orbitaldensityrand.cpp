@@ -13,13 +13,12 @@
 #include <tbb/parallel_for.h>                                   // for tbb::parallel_for
 
 namespace orbitaldensityrand {
-	//float const OrbitalDensityRand::MAGNIFICATION = 1.2f;
-
 	OrbitalDensityRand::OrbitalDensityRand(std::shared_ptr<getdata::GetData> const & pgd)
-        :   Complete([this]{ return complete_.load(); }, nullptr),
-		    Pth([this]{ return std::cref(pth_); }, nullptr),
-		    Redraw(nullptr, [this](bool redraw){ return redraw_ = redraw; }),
-		    Thread_end(nullptr, [this](bool thread_end){ 
+        :   Complete([this] { return complete_.load(); }, nullptr),
+            Pth([this] { return std::cref(pth_); }, nullptr),
+		    Redraw(nullptr, [this](auto redraw) { return redraw_ = redraw; }),
+            Rmax([this] { return rmax_; }, nullptr),
+		    Thread_end(nullptr, [this](auto thread_end) { 
 			    thread_end_.store(thread_end);
 			    return thread_end; }),
             Vertices([this] { return std::cref(vertices_); }, nullptr),
@@ -39,8 +38,6 @@ namespace orbitaldensityrand {
                 vertices_.resize(vertexsize_);
             }
 
-            //ClearFillSimpleVertex(m, reim);
-
             pth_.reset(new std::thread([this, m, reim] { ClearFillSimpleVertex(m, reim); }), [this](std::thread * pth)
             {
                 if (pth->joinable()) {
@@ -53,8 +50,6 @@ namespace orbitaldensityrand {
             });
             redraw_ = false;
         }
-
-        auto a = 1;
     }
 
 	void OrbitalDensityRand::ClearFillSimpleVertex(std::int32_t m, OrbitalDensityRand::Re_Im_type reim)
@@ -179,17 +174,6 @@ namespace orbitaldensityrand {
 		ver.Color.z = 0.8f;
 		ver.Color.w = 1.0f;
 	}
-
-
-	//void OrbitalDensityRand::SetCamera()
-	//{
-	//	// Initialize the view matrix
-	//	auto const pos = static_cast<float>(rmax_)* OrbitalDensityRand::MAGNIFICATION;
-	//	D3DXVECTOR3 Eye(0.0f, pos, -pos);
-	//	D3DXVECTOR3 At(0.0f, 0.0f, 0.0f);
-	//	camera_.SetViewParams(&Eye, &At);
-	//}
-
 
 	double GetRmax(std::shared_ptr<getdata::GetData> const & pgd)
 	{

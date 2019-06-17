@@ -119,6 +119,12 @@ namespace orbitaldensityrand {
 		*/
 		utility::Property<bool> Redraw;
 
+        //! A property.
+        /*!
+            描画するrの最大値へのプロパティ
+        */
+        utility::Property<double> Rmax;
+        
 		//! A property.
 		/*!
 			スレッドを強制終了するかどうかへのプロパティ
@@ -129,7 +135,7 @@ namespace orbitaldensityrand {
         /*!
             頂点へのプロパティ
         */
-        utility::Property< std::vector<SimpleVertex> const &> Vertices;
+        utility::Property<std::vector<SimpleVertex> const &> Vertices;
         
 		//! A property.
 		/*!
@@ -154,18 +160,6 @@ namespace orbitaldensityrand {
 			?????????
 		*/
 		//static float const MAGNIFICATION;
-
-        //! A private member variable.
-		/*!
-			バッファー リソース
-		*/
-        D3D11_BUFFER_DESC bd_{};
-
-		//! A private member variable.
-		/*!
-			A model viewing camera
-		*/
-		//CModelViewerCamera camera_;
 
 		//! A private member variable.
 		/*!
@@ -205,7 +199,7 @@ namespace orbitaldensityrand {
 
 		//! A private member variable.
 		/*!
-			???
+			描画スレッドの作業が完了したかどうか
 		*/
 		std::atomic<std::vector<SimpleVertex>::size_type> vertexsize_ = VERTEXSIZE_INIT_VALUE;
 

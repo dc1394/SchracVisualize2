@@ -54,51 +54,57 @@ struct CBChangesEveryFrame2
 
 //! A global variable (constant).
 /*!
-	画面サイズ（高さ）
+    カメラの位置の倍率
+*/
+static auto constexpr MAGNIFICATION = 1.2f;
+
+//! A global variable (constant).
+/*!
+    画面サイズ（高さ）
 */
 static auto constexpr WINDOWHEIGHT = 960;
 
 //! A global variable (constant).
 /*!
-	画面サイズ（幅）
+    画面サイズ（幅）
 */
 static auto constexpr WINDOWWIDTH = 1280;
 
 //! A global variable.
 /*!
-	A model viewing camera
+    A model viewing camera
 */
 CModelViewerCamera camera;
 
-//! A global variable.
-/*!
-    データオブジェクト
-*/
-std::shared_ptr<getdata::GetData> pgd;
-
-//! A global variable.
-/*!
-    軌道・電子密度の乱数生成クラスのオブジェクト
-*/
-std::optional<OrbitalDensityRand> podr;
-
 //! A lambda expression.
 /*!
-	CDXUTTextHelperへのポインタを解放するラムダ式
-	\param spline CDXUTTextHelperへのポインタ
+    CDXUTTextHelperへのポインタを解放するラムダ式
+    \param spline CDXUTTextHelperへのポインタ
 */
 static auto const deleter = [](auto ptxthelper) {
-	if (ptxthelper) {
-		delete ptxthelper;
-		ptxthelper = nullptr;
-	}
+    if (ptxthelper) {
+        delete ptxthelper;
+        ptxthelper = nullptr;
+    }
 };
 
 //! A global variable.
 /*!
-	manager for shared resources of dialogs
+    manager for shared resources of dialogs
 */
 CDXUTDialogResourceManager dialogResourceManager;
+
+//! A global variable.
+/*!
+    描画する軌道の識別数値
+*/
+auto drawdata = 1U;
+
+//! A global variable.
+/*!
+    計算が開始したことを示すフラグ
+*/
+auto first = true;
 
 //! A global variable.
 /*!
@@ -114,14 +120,20 @@ D3D11_BUFFER_DESC g_bd2;
 
 //! A global variable.
 /*!
+    Direct3Dデバイス
 */
-std::vector<std::int32_t> indices;
+ID3D11Device* g_pd3dDevice;
 
 //! A global variable.
 /*!
-	manages the 3D UI
+    manages the 3D UI
 */
 CDXUTDialog hud;
+
+//! A global variable.
+/*!
+*/
+std::vector<std::int32_t> indices;
 
 //! A global variable.
 /*!
@@ -135,25 +147,37 @@ Microsoft::WRL::ComPtr<ID3D11Buffer> pCBNeverChanges;
 
 //! A global variable.
 /*!
-	インデックスバッファ
+    データオブジェクト
+*/
+std::shared_ptr<getdata::GetData> pgd;
+
+//! A global variable.
+/*!
+    インデックスバッファ
 */
 ID3D11Buffer* pIndexBuffer;
 
 //! A global variable.
 /*!
-	ピクセルシェーダー
+    軌道・電子密度の乱数生成クラスのオブジェクト
+*/
+std::optional<OrbitalDensityRand> podr;
+
+//! A global variable.
+/*!
+    ピクセルシェーダー
 */
 Microsoft::WRL::ComPtr<ID3D11PixelShader> pPixelShaderBox;
 
 //! A global variable.
 /*!
-	テキスト表示用
+    テキスト表示用
 */
 std::unique_ptr<CDXUTTextHelper, decltype(deleter)> pTxtHelper(nullptr, deleter);
 
 //! A global variable.
 /*!
-	頂点バッファ
+    頂点バッファ
 */
 Microsoft::WRL::ComPtr<ID3D11Buffer> pVertexBuffer;
 
@@ -164,21 +188,9 @@ Microsoft::WRL::ComPtr<ID3D11InputLayout> pVertexLayout;
 
 //! A global variable.
 /*!
-	バーテックスシェーダー
+    バーテックスシェーダー
 */
 Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShaderBox;
-
-//! A global variable.
-/*!
-	Device settings dialog
-*/
-CD3DSettingsDlg settingsDlg;
-
-//! A global variable.
-/*!
-	dialog for specific controls
-*/
-CDXUTDialog ui;
 
 //! A global variable.
 /*!
@@ -186,27 +198,62 @@ CDXUTDialog ui;
 */
 auto reim = OrbitalDensityRand::Re_Im_type::REAL;
 
+//! A global variable.
+/*!
+*/
+auto ROT_FLAG = true;
+
+//! A global variable.
+/*!
+    Device settings dialog
+*/
+CD3DSettingsDlg settingsDlg;
+
+//! A global variable.
+/*!
+    dialog for specific controls
+*/
+CDXUTDialog ui;
+
+
 //--------------------------------------------------------------------------------------
 // UI control IDs
 //--------------------------------------------------------------------------------------
 #define IDC_TOGGLEFULLSCREEN    1
 #define IDC_CHANGEDEVICE        2
-#define IDC_RECALC              3
-#define IDC_OUTPUT              4
-#define IDC_OUTPUT2             5
-#define IDC_OUTPUT3             6
-#define IDC_OUTPUT4             7
-#define IDC_OUTPUT5             8
-#define IDC_SLIDER              9
-#define IDC_SLIDER2             10
-#define IDC_SLIDER3             11
-#define IDC_RADIOA              12
-#define IDC_RADIOB              13
-#define IDC_RADIOC              14
-#define IDC_RADIOD              15
-#define IDC_RADIOE              16
+#define IDC_TOGGLEROTATION      3
+#define IDC_REDRAW              4
+#define IDC_READDATA            5
+#define IDC_COMBOBOX            6
+#define IDC_RADIOA              7
+#define IDC_RADIOB              8
+#define IDC_OUTPUT              9
+#define IDC_SLIDER				10
 
+//--------------------------------------------------------------------------------------
+// Forward declarations 
+//--------------------------------------------------------------------------------------
 void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, void* pUserContext);
+
+//! A function.
+/*!
+    ウィンドウタイトルを生成する
+    \return ウィンドウタイトル
+*/
+std::wstring CreateWindowTitle();
+
+//! A function.
+/*!
+    Initialize the app
+*/
+void InitApp();
+
+//! A function.
+/*!
+    初期化する
+    \param pd3dDevice Direct3Dデバイス
+*/
+HRESULT OnInit(ID3D11Device* pd3dDevice);
 
 //! A function.
 /*!
@@ -217,36 +264,53 @@ HRESULT OnRender(ID3D11DeviceContext* pd3dImmediateContext);
 
 //! A function.
 /*!
-    初期化する
-*/
-HRESULT OnInit(ID3D11Device* pd3dDevice);
-
-//! A function.
-/*!
     テキストファイルからデータを読み込む
 */
 void ReadData();
 
-//--------------------------------------------------------------------------------------
-// Forward declarations 
-//--------------------------------------------------------------------------------------
+//! A function.
+/*!
+    再描画する
+    \param pd3dDevice Direct3Dデバイス
+*/
+void Redraw();
+
+//! A function.
+/*!
+    再描画フラグをtrueにする
+*/
+void RedrawFlagTrue();
+
+//! A function.
+/*!
+    画面の左上に情報を表示する
+*/
 void RenderText();
 
 //! A function.
 /*!
 	点を描画する
-	\param pd3dDevice Direct3Dのデバイス
+	\param pd3dDevice Direct3Dデバイス
 */
 HRESULT RenderPoint(ID3D11Device* pd3dDevice);
 
 //! A function.
 /*!
-	Initialize the app 
+    カメラの位置をセットする
 */
-void InitApp();
+void SetCamera();
 
-
+//! A function.
+/*!
+    UIを配置する
+*/
 void SetUI();
+
+//! A function.
+/*!
+    描画を中止する
+*/
+void StopDraw();
 
 //--------------------------------------------------------------------------------------
 // 
@@ -323,6 +387,8 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 {
     auto hr = S_OK;
 
+    g_pd3dDevice = pd3dDevice;
+
     auto pd3dImmediateContext = DXUTGetD3D11DeviceContext();
 	V_RETURN(dialogResourceManager.OnD3D11CreateDevice(pd3dDevice, pd3dImmediateContext));
 	V_RETURN(settingsDlg.OnD3D11CreateDevice(pd3dDevice));
@@ -342,7 +408,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 
     // Compile the vertex shader
 	Microsoft::WRL::ComPtr<ID3DBlob> pVSBlob;
-    V_RETURN( DXUTCompileFromFile( L"LJ_Argon_MD_Direct3D_11_Box.fx", nullptr, "VS", "vs_4_0", dwShaderFlags, 0, pVSBlob.GetAddressOf() ) );
+    V_RETURN( DXUTCompileFromFile( L"SchracVisualize_Direct3D_11.fx", nullptr, "VS", "vs_4_0", dwShaderFlags, 0, pVSBlob.GetAddressOf() ) );
 
     // Create the vertex shader
     hr = pd3dDevice->CreateVertexShader( pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, pVertexShaderBox.GetAddressOf() );
@@ -364,7 +430,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 
 	// Compile the pixel shader
 	Microsoft::WRL::ComPtr<ID3DBlob> pPSBlob;
-	V_RETURN(DXUTCompileFromFile(L"LJ_Argon_MD_Direct3D_11_Box.fx", nullptr, "PS", "ps_4_0", dwShaderFlags, 0, pPSBlob.GetAddressOf()));
+	V_RETURN(DXUTCompileFromFile(L"SchracVisualize_Direct3D_11.fx", nullptr, "PS", "ps_4_0", dwShaderFlags, 0, pPSBlob.GetAddressOf()));
 
 	// Create the pixel shader
 	hr = pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, pPixelShaderBox.GetAddressOf());
@@ -391,10 +457,6 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     bd.ByteWidth = sizeof(CBChangesEveryFrame);
     V_RETURN( pd3dDevice->CreateBuffer( &bd, nullptr, pCBChangesEveryFrame.GetAddressOf() ) );
-
-	// Setup the camera's view parameters
-	static const XMVECTORF32 s_vecEye = { 0.0f, 5.0f, 5.0f, 0.0f };
-	camera.SetViewParams(s_vecEye, g_XMZero);
 
     return S_OK;
 }
@@ -436,9 +498,7 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 
 	RenderPoint(pd3dDevice);
 
-	//armd.runCalc();
-
-	//
+    //
 	// Clear the back buffer
 	//
 	pd3dImmediateContext->ClearRenderTargetView(DXUTGetD3D11RenderTargetView(), Colors::Black);
@@ -560,46 +620,56 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 	case IDC_CHANGEDEVICE:
 		settingsDlg.SetActive(!settingsDlg.IsActive());
 		break;
-	//case IDC_RECALC:
-	//	armd.recalc();
-	//	break;
 
-	//case IDC_SLIDER:
-	//	armd.setTgiven(static_cast<double>((reinterpret_cast<CDXUTSlider *>(pControl))->GetValue()));
-	//	break;
+    case IDC_TOGGLEROTATION:
+        ROT_FLAG = !ROT_FLAG;
+        break;
 
-	//case IDC_SLIDER2:
-	//	armd.setScale(static_cast<double>((reinterpret_cast<CDXUTSlider *>(pControl))->GetValue()) / LATTICERATIO);
-	//	modLatconst = true;
-	//	break;
+    case IDC_REDRAW:
+        RedrawFlagTrue();
+        Redraw();
+        break;
 
-	//case IDC_SLIDER3:
-	//	armd.setNc(reinterpret_cast<CDXUTSlider *>(pControl)->GetValue());
-	//	modNc = true;
-	//	break;
+    case IDC_READDATA:
+        StopDraw();
+        ReadData();
+        SetUI();
+        podr.emplace(pgd);
+        first = true;
+        ::SetWindowText(DXUTGetHWND(), CreateWindowTitle().c_str());
+        break;
 
-	//case IDC_RADIOA:
-	//	armd.setEnsemble(moleculardynamics::EnsembleType::NVT);
-	//	break;
+    case IDC_COMBOBOX:
+    {
+        auto const pItem = (static_cast<CDXUTComboBox*>(pControl))->GetSelectedItem();
+        if (pItem)
+        {
+            drawdata = reinterpret_cast<std::uint32_t>(pItem->pData);
+            RedrawFlagTrue();
+        }
+        break;
+    }
 
-	//case IDC_RADIOB:
-	//	armd.setEnsemble(moleculardynamics::EnsembleType::NVE);
-	//	break;
+    case IDC_RADIOA:
+        reim = OrbitalDensityRand::Re_Im_type::REAL;
+        RedrawFlagTrue();
+        Redraw();
+        break;
 
-	//case IDC_RADIOC:
-	//	armd.setTempContMethod(moleculardynamics::TempControlMethod::LANGEVIN);
-	//	break;
+    case IDC_RADIOB:
+        reim = OrbitalDensityRand::Re_Im_type::IMAGINARY;
+        RedrawFlagTrue();
+        Redraw();
+        break;
 
-	//case IDC_RADIOD:
-	//	armd.setTempContMethod(moleculardynamics::TempControlMethod::NOSE_HOOVER);
-	//	break;
-
-	//case IDC_RADIOE:
-	//	armd.setTempContMethod(moleculardynamics::TempControlMethod::VELOCITY);
-	//	break;
+    case IDC_SLIDER:
+        RedrawFlagTrue();
+        podr->Vertexsize(static_cast<std::vector<SimpleVertex>::size_type>((reinterpret_cast<CDXUTSlider*>(pControl))->GetValue()));
+        Redraw();
+        break;
 
 	default:
-		BOOST_ASSERT(!"何かがおかしい！！");
+		BOOST_ASSERT(!"何かがおかしい!");
 		break;
 	}
 }
@@ -607,32 +677,10 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 
 HRESULT OnInit(ID3D11Device* pd3dDevice)
 {
-    auto hr = S_OK;
+    Redraw();
 
-    ZeroMemory(&g_bd, sizeof(g_bd));
-    g_bd.Usage = D3D11_USAGE_DEFAULT;
-    g_bd.ByteWidth = sizeof(SimpleVertex) * podr->Vertexsize;
-    g_bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    g_bd.CPUAccessFlags = 0;
-
-    // Create index buffer
-
-    indices.resize(podr->Vertexsize);
-    std::iota(indices.begin(), indices.end(), 0);
-
-    ZeroMemory(&g_bd2, sizeof(g_bd2));
-    g_bd2.Usage = D3D11_USAGE_DEFAULT;
-    g_bd2.ByteWidth = sizeof(DWORD) * podr->Vertexsize;
-    g_bd2.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    g_bd2.CPUAccessFlags = 0;
-    g_bd2.MiscFlags = 0;
-    D3D11_SUBRESOURCE_DATA InitData;
-    InitData.pSysMem = indices.data();
-    V_RETURN(pd3dDevice->CreateBuffer(&g_bd2, &InitData, &pIndexBuffer));
-
-    return hr;
+    return S_OK;
 }
-
 
 //--------------------------------------------------------------------------------------
 // Handle key presses
@@ -684,6 +732,22 @@ HRESULT OnRender(ID3D11DeviceContext* pd3dImmediateContext)
     return hr;
 }
 
+std::wstring CreateWindowTitle()
+{
+    std::string windowtitle;
+    switch (pgd->Rho_wf_type_) {
+    case getdata::GetData::Rho_Wf_type::RHO:
+        windowtitle = "Electron density";
+        break;
+
+    case getdata::GetData::Rho_Wf_type::WF:
+        windowtitle = "Wavefunction";
+        break;
+    }
+    windowtitle += " in " + pgd->Atomname() + " for " + pgd->Orbital() + " orbital";
+
+    return utility::my_mbstowcs(windowtitle);
+}
 
 HRESULT RenderPoint(ID3D11Device* pd3dDevice)
 {
@@ -696,10 +760,9 @@ HRESULT RenderPoint(ID3D11Device* pd3dDevice)
 	ZeroMemory(&InitData, sizeof(InitData));
     InitData.pSysMem = podr->Vertices().data();
 	V_RETURN(pd3dDevice->CreateBuffer(&g_bd, &InitData, pVertexBuffer.ReleaseAndGetAddressOf()));
-    	
+
 	return hr;
 }
-
 
 void ReadData()
 {
@@ -716,6 +779,43 @@ void ReadData()
     }
 }
 
+//! A function.
+/*!
+    再描画する
+*/
+void Redraw()
+{
+    ZeroMemory(&g_bd, sizeof(g_bd));
+    g_bd.Usage = D3D11_USAGE_DEFAULT;
+    g_bd.ByteWidth = static_cast<UINT>(sizeof(SimpleVertex) * podr->Vertexsize);
+    g_bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    g_bd.CPUAccessFlags = 0;
+
+    // Create index buffer
+
+    indices.resize(podr->Vertexsize);
+    std::iota(indices.begin(), indices.end(), 0);
+
+    ZeroMemory(&g_bd2, sizeof(g_bd2));
+    g_bd2.Usage = D3D11_USAGE_DEFAULT;
+    g_bd2.ByteWidth = static_cast<UINT>(sizeof(DWORD) * podr->Vertexsize);
+    g_bd2.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    g_bd2.CPUAccessFlags = 0;
+    g_bd2.MiscFlags = 0;
+    D3D11_SUBRESOURCE_DATA InitData;
+    InitData.pSysMem = indices.data();
+    g_pd3dDevice->CreateBuffer(&g_bd2, &InitData, &pIndexBuffer);
+
+    SetCamera();
+}
+
+void RedrawFlagTrue()
+{
+    StopDraw();
+    podr->Thread_end = false;
+    podr->Redraw = true;
+    first = true;
+}
 
 //--------------------------------------------------------------------------------------
 // Render the help and statistics text.
@@ -742,6 +842,15 @@ void RenderText()
 	pTxtHelper->End();
 }
 
+void SetCamera()
+{
+    // Initialize the view matrix
+    auto const pos = static_cast<float>(podr->Rmax) * MAGNIFICATION;
+    // Setup the camera's view parameters
+    XMVECTORF32 s_vecEye = { 0.0f, pos, -pos, 0.0f };
+    XMVECTORF32 s_vecAt = { 0.0f, 0.0f, 0.0f, 0.0f };
+    camera.SetViewParams(s_vecEye, s_vecAt);
+}
 
 void SetUI()
 {
@@ -750,64 +859,85 @@ void SetUI()
 	auto iY = 10;
 	hud.AddButton(IDC_TOGGLEFULLSCREEN, L"Toggle full screen", 0, iY, 170, 22);
 	hud.AddButton(IDC_CHANGEDEVICE, L"Change device (F2)", 0, iY += 26, 170, 22, VK_F2);
+    hud.AddButton(IDC_TOGGLEROTATION, L"Toggle Rotaion Animation", 0, iY += 24, 200, 22);
+
+    hud.AddButton(IDC_REDRAW, L"Redraw", 0, iY += 34, 170, 22);
+    hud.AddButton(IDC_READDATA, L"Load new file", 0, iY += 24, 170, 22);
+
+    // Combobox
+    CDXUTComboBox* pCombo;
+    hud.AddComboBox(IDC_COMBOBOX, 35, iY += 34, 125, 22, L'O', false, &pCombo);
+    if (pCombo)
+    {
+        pCombo->SetDropHeight(100);
+        pCombo->RemoveAllItems();
+        BOOST_ASSERT(pgd->N > static_cast<std::int32_t>(pgd->L));
+        auto orbital(std::to_wstring(pgd->N));
+        switch (pgd->L) {
+        case 0:
+        {
+            orbital += L's';
+            pCombo->AddItem(orbital.c_str(), reinterpret_cast<LPVOID>(0x11111111));
+        }
+        break;
+
+        case 1:
+        {
+            pCombo->AddItem((orbital + L"px").c_str(), reinterpret_cast<LPVOID>(0x11111111));
+            pCombo->AddItem((orbital + L"py").c_str(), reinterpret_cast<LPVOID>(0x12121212));
+            pCombo->AddItem((orbital + L"pz").c_str(), reinterpret_cast<LPVOID>(0x13131313));
+        }
+        break;
+
+        case 2:
+        {
+            pCombo->AddItem((orbital + L"dxy").c_str(), reinterpret_cast<LPVOID>(0x11111111));
+            pCombo->AddItem((orbital + L"dyz").c_str(), reinterpret_cast<LPVOID>(0x12121212));
+            pCombo->AddItem((orbital + L"dzx").c_str(), reinterpret_cast<LPVOID>(0x13131313));
+            pCombo->AddItem((orbital + L"dx^2-y^2").c_str(), reinterpret_cast<LPVOID>(0x14141414));
+            pCombo->AddItem((orbital + L"dz^2").c_str(), reinterpret_cast<LPVOID>(0x15151515));
+        }
+        break;
+
+        case 3:
+        {
+            pCombo->AddItem((orbital + L"fxz^2").c_str(), reinterpret_cast<LPVOID>(0x11111111));
+            pCombo->AddItem((orbital + L"fyz^2").c_str(), reinterpret_cast<LPVOID>(0x12121212));
+            pCombo->AddItem((orbital + L"fz(x^2-y^2)").c_str(), reinterpret_cast<LPVOID>(0x13131313));
+            pCombo->AddItem((orbital + L"fxyz").c_str(), reinterpret_cast<LPVOID>(0x14141414));
+            pCombo->AddItem((orbital + L"fx(x^2-3y^2)").c_str(), reinterpret_cast<LPVOID>(0x15151515));
+            pCombo->AddItem((orbital + L"fy(3x^2-y^2)").c_str(), reinterpret_cast<LPVOID>(0x16161616));
+            pCombo->AddItem((orbital + L"fz^2").c_str(), reinterpret_cast<LPVOID>(0x17171717));
+        }
+        break;
+
+        default:
+            throw std::runtime_error("g以上の軌道には対応していません");
+            break;
+        }
+
+        if (pgd->Rho_wf_type_ == getdata::GetData::Rho_Wf_type::WF) {
+            // Radio buttons
+            hud.AddRadioButton(IDC_RADIOA, 1, L"Real part", 35, iY += 34, 125, 22, true, L'1');
+            hud.AddRadioButton(IDC_RADIOB, 1, L"Imaginary part", 35, iY += 28, 125, 22, false, L'2');
+        }
+    }
+
+    // 角度の調整
+    hud.AddStatic(IDC_OUTPUT, L"Vertex size", 20, iY += 34, 125, 22);
+    hud.GetStatic(IDC_OUTPUT)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
+    hud.AddSlider(IDC_SLIDER, 35, iY += 24, 125, 22, 0, 200000, OrbitalDensityRand::VERTEXSIZE_INIT_VALUE);
 
 	ui.SetCallback(OnGUIEvent);
-
-	hud.AddButton(IDC_RECALC, L"Recalculation", 35, iY += 34, 125, 22);
-
-	// 温度の変更
-	//hud.AddStatic(IDC_OUTPUT, L"Temperture", 20, iY += 34, 125, 22);
-	//hud.GetStatic(IDC_OUTPUT)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
-	//hud.AddSlider(
-	//	IDC_SLIDER,
-	//	35,
-	//	iY += 24,
-	//	125,
-	//	22,
-	//	1,
-	//	3000,
-	//	boost::numeric_cast<int>(moleculardynamics::Ar_moleculardynamics::FIRSTTEMP));
-
-	//// 格子定数の変更
-	//hud.AddStatic(IDC_OUTPUT2, L"Lattice constant", 20, iY += 34, 125, 22);
-	//hud.GetStatic(IDC_OUTPUT2)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
-	//hud.AddSlider(
-	//	IDC_SLIDER2,
-	//	35,
-	//	iY += 24,
-	//	125,
-	//	22,
-	//	30,
-	//	1000,
-	//	boost::numeric_cast<int>(moleculardynamics::Ar_moleculardynamics::FIRSTSCALE * LATTICERATIO));
-
-	//// スーパーセルの個数の変更
-	//hud.AddStatic(IDC_OUTPUT3, L"Number of supercell", 20, iY += 34, 125, 22);
-	//hud.GetStatic(IDC_OUTPUT3)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
-	//hud.AddSlider(
-	//	IDC_SLIDER3,
-	//	35,
-	//	iY += 24,
-	//	125,
-	//	22,
-	//	1,
-	//	16,
-	//	moleculardynamics::Ar_moleculardynamics::FIRSTNC);
-
-	// アンサンブルの変更
-	hud.AddStatic(IDC_OUTPUT4, L"Ensemble", 20, iY += 40, 125, 22);
-	hud.GetStatic(IDC_OUTPUT4)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
-	hud.AddRadioButton(IDC_RADIOA, 1, L"NVT ensemble", 35, iY += 24, 125, 22, true);
-	hud.AddRadioButton(IDC_RADIOB, 1, L"NVE ensemble", 35, iY += 28, 125, 22, false);
-
-	// 温度制御法の変更
-	hud.AddStatic(IDC_OUTPUT4, L"Temperture control", 15, iY += 40, 125, 22);
-	hud.GetStatic(IDC_OUTPUT4)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
-	hud.AddRadioButton(IDC_RADIOC, 2, L"Langevin", 20, iY += 24, 125, 22, false);
-	hud.AddRadioButton(IDC_RADIOD, 2, L"Nose-Hoover", 20, iY += 28, 125, 22, false);
-	hud.AddRadioButton(IDC_RADIOE, 2, L"Velocity Scaling", 20, iY += 28, 125, 22, true);
 }
 
+void StopDraw()
+{
+    podr->Thread_end = true;
+    if (podr->Pth()->joinable()) {
+        podr->Pth()->join();
+    }
+}
 
 //--------------------------------------------------------------------------------------
 // Initialize everything and go into a render loop
@@ -849,7 +979,7 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	auto const dispy = ::GetSystemMetrics(SM_CYSCREEN);
 	auto const xpos = (dispx - WINDOWWIDTH) / 2;
 	auto const ypos = (dispy - WINDOWHEIGHT) / 2;
-	DXUTCreateWindow( L"test", nullptr, nullptr, nullptr, xpos, ypos);
+	DXUTCreateWindow(CreateWindowTitle().c_str(), nullptr, nullptr, nullptr, xpos, ypos);
 	
     // Only require 10-level hardware or later
     DXUTCreateDevice( D3D_FEATURE_LEVEL_11_0, true, WINDOWWIDTH, WINDOWHEIGHT);
