@@ -385,13 +385,15 @@ copy sphere.sdkmesh ..\x64\Release</Command>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="LJ_Argon_MD_Direct3D_11_Box.fx" />
-  </ItemGroup>
-  <ItemGroup>
     <CLInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SchracVisualize_Direct3D_11.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SchracVisualize_Direct3D_11.fx">
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -1,6 +1,6 @@
-﻿/*! \file orbitaldensityrand.cpp
-    \brief OrbitalDensityRandクラスの実装
-    Copyright © 2019 @dc1394 All Rights Reserved.
+/*! \file orbitaldensityrand.cpp
+    \brief OrbitalDensityRand??????
+    Copyright � 2019 @dc1394 All Rights Reserved.
     This software is released under the BSD 2-Clause License.
 */
 
@@ -31,7 +31,7 @@ namespace orbitaldensityrand {
     {
     }
 
-    void OrbitalDensityRand::RedrawFunc(std::int32_t m, OrbitalDensityRand::Re_Im_type reim)
+    void OrbitalDensityRand::operator()(std::int32_t m, OrbitalDensityRand::Re_Im_type reim)
     {
         if (redraw_) {
             if (vertices_.size() != vertexsize_) {
@@ -131,7 +131,7 @@ namespace orbitaldensityrand {
 					break;
 
 				default:
-					BOOST_ASSERT(!"何かがおかしい!");
+					BOOST_ASSERT(!"???????!");
 					break;
 				}
 
@@ -141,7 +141,7 @@ namespace orbitaldensityrand {
 			break;
 
 			default:
-				BOOST_ASSERT(!"何かがおかしい!");
+				BOOST_ASSERT(!"???????!");
 				break;
 			}
 
@@ -155,7 +155,7 @@ namespace orbitaldensityrand {
 				break;
 
 			default:
-				BOOST_ASSERT(!"何かがおかしい!");
+				BOOST_ASSERT(!"???????!");
 				break;
 			}
 

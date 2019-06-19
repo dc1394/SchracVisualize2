@@ -23,7 +23,7 @@ namespace utility {
         \param codeMulti ???????????????(?????=932)
         \return ??????
     */
-    std::wstring my_mbstowcs(std::string const & mbs, std::int32_t codeMulti = 932);
+    std::wstring my_mbstowcs(std::string const& mbs, std::int32_t codeMulti = 932);
 
     //! A function.
     /*!
@@ -39,7 +39,7 @@ namespace utility {
         \param codeMulti ???????????????(?????=932)
         \return ?????????
     */
-    std::string my_wcstombs(std::array<wchar_t, MAX_PATH> const & wcs, std::int32_t codeMulti = 932);
+    std::string my_wcstombs(std::array<wchar_t, MAX_PATH> const& wcs, std::int32_t codeMulti = 932);
 
     //! A function.
     /*!
@@ -51,7 +51,7 @@ namespace utility {
         \param defextension ?????????????
         \return ???????????????
     */
-    BOOL showFileDialog(HWND hWnd, wchar_t * filepath, wchar_t * filename, wchar_t const * title, wchar_t const * defextension);
+    BOOL showFileDialog(HWND hWnd, wchar_t* filepath, wchar_t* filename, wchar_t const* title, wchar_t const* defextension);
 
     template <typename T>
     //! A struct.
@@ -65,7 +65,7 @@ namespace utility {
             ???????????????
             \param p ??????????????
         */
-        void operator()(T * p) {
+        void operator()(T* p) {
             if (p) {
                 delete p;
                 p = nullptr;

@@ -23,6 +23,7 @@
 #include <optional>                                 // for std::optional
 #include <boost/cast.hpp>                           // for boost::numeric_cast
 #include <boost/format.hpp>			                // for boost::wformat
+#include <tbb/task_scheduler_init.h>                // for tbb::task_scheduler_init
 #include <wrl.h>					                // for Microsoft::WRL::ComPtr
 
 #pragma warning( disable : 4100 )
@@ -72,6 +73,12 @@ static auto constexpr WINDOWWIDTH = 1280;
 
 //! A global variable.
 /*!
+    CPUのスレッド数
+*/
+static auto const cputhreads = tbb::task_scheduler_init::default_num_threads();
+
+//! A global variable.
+/*!
     A model viewing camera
 */
 CModelViewerCamera camera;
@@ -102,21 +109,33 @@ auto drawdata = 1U;
 
 //! A global variable.
 /*!
+    計算開始時間
+*/
+double drawstarttime;
+
+//! A global variable.
+/*!
+    計算終了時間
+*/
+double drawendtime;
+
+//! A global variable.
+/*!
     計算が開始したことを示すフラグ
 */
 auto first = true;
 
 //! A global variable.
 /*!
-    バッファーリソース
+    計算が終了したことを示すフラグ
 */
-D3D11_BUFFER_DESC g_bd;
+auto end = false;
 
 //! A global variable.
 /*!
-    バッファーリソース2
+    バッファーリソース
 */
-D3D11_BUFFER_DESC g_bd2;
+D3D11_BUFFER_DESC g_bd;
 
 //! A global variable.
 /*!
@@ -129,11 +148,6 @@ ID3D11Device* g_pd3dDevice;
     manages the 3D UI
 */
 CDXUTDialog hud;
-
-//! A global variable.
-/*!
-*/
-std::vector<std::int32_t> indices;
 
 //! A global variable.
 /*!
@@ -155,7 +169,7 @@ std::shared_ptr<getdata::GetData> pgd;
 /*!
     インデックスバッファ
 */
-ID3D11Buffer* pIndexBuffer;
+Microsoft::WRL::ComPtr<ID3D11Buffer> pIndexBuffer;
 
 //! A global variable.
 /*!
@@ -250,13 +264,6 @@ void InitApp();
 
 //! A function.
 /*!
-    初期化する
-    \param pd3dDevice Direct3Dデバイス
-*/
-HRESULT OnInit(ID3D11Device* pd3dDevice);
-
-//! A function.
-/*!
     描画する
     \param pd3dImmediateContext Direct3Dのデバイスコンテキスト
 */
@@ -285,14 +292,14 @@ void RedrawFlagTrue();
 /*!
     画面の左上に情報を表示する
 */
-void RenderText();
+void RenderText(double fTime);
 
 //! A function.
 /*!
 	点を描画する
 	\param pd3dDevice Direct3Dデバイス
 */
-HRESULT RenderPoint(ID3D11Device* pd3dDevice);
+HRESULT RenderPoint();
 
 //! A function.
 /*!
@@ -418,12 +425,17 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
     }
 
 	// Define the input layout
-    std::array<D3D11_INPUT_ELEMENT_DESC, 3> layout =
+    D3D11_INPUT_ELEMENT_DESC layout[] =
     {
-        "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0,
-		"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0,
-		"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0
+        "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0,
+        "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
     };
+
+    auto const numElements = ARRAYSIZE(layout);
+
+    // Create the input layout
+    hr = pd3dDevice->CreateInputLayout(layout, numElements, pVSBlob->GetBufferPointer(),
+        pVSBlob->GetBufferSize(), pVertexLayout.GetAddressOf());
 
     // Set the input layout
     pd3dImmediateContext->IASetInputLayout( pVertexLayout.Get() );
@@ -436,7 +448,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	hr = pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, pPixelShaderBox.GetAddressOf());
 	pPSBlob.Reset();
 
-    OnInit(pd3dDevice);
+    Redraw();
 
 	// Set vertex buffer
 	UINT const stride = sizeof(SimpleVertex);
@@ -444,7 +456,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	pd3dImmediateContext->IASetVertexBuffers(0, 1, pVertexBuffer.GetAddressOf(), &stride, &offset);
 
     // Set index buffer
-    pd3dImmediateContext->IASetIndexBuffer( pIndexBuffer, DXGI_FORMAT_R32_UINT, 0 );
+    pd3dImmediateContext->IASetIndexBuffer( pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0 );
 
     // Set primitive topology
     pd3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
@@ -467,6 +479,7 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 //--------------------------------------------------------------------------------------
 void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 {
+    StopDraw();
 	dialogResourceManager.OnD3D11DestroyDevice();
 	settingsDlg.OnD3D11DestroyDevice();
 	DXUTGetGlobalResourceCache().OnDestroyDevice();
@@ -475,7 +488,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	pVertexLayout.Reset();
 	pVertexBuffer.Reset();
 	pPixelShaderBox.Reset();
-	SAFE_DELETE(pIndexBuffer);
+	pIndexBuffer.Reset();
 	pCBNeverChanges.Reset();
 	pCBChangesEveryFrame.Reset();
 }
@@ -496,7 +509,7 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 		return;
 	}
 
-	RenderPoint(pd3dDevice);
+	RenderPoint();
 
     //
 	// Clear the back buffer
@@ -530,7 +543,7 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 	pd3dImmediateContext->IASetVertexBuffers(0, 1, pVertexBuffer.GetAddressOf(), &stride, &offset);
 
 	// Set index buffer
-	pd3dImmediateContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	pd3dImmediateContext->IASetIndexBuffer(pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 	// Set primitive topology
 	pd3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
@@ -542,13 +555,13 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 	pd3dImmediateContext->VSSetConstantBuffers(0, 1, pCBChangesEveryFrame.GetAddressOf());
 	pd3dImmediateContext->PSSetShader(pPixelShaderBox.Get(), nullptr, 0);
 	pd3dImmediateContext->PSSetConstantBuffers(0, 1, pCBChangesEveryFrame.GetAddressOf());
-	pd3dImmediateContext->DrawIndexed(podr->Vertexsize, 0, 0);
+	pd3dImmediateContext->DrawIndexed(static_cast<UINT>(podr->Vertexsize), 0, 0);
 
     OnRender(pd3dImmediateContext);
 
 	hud.OnRender(fElapsedTime);
 	ui.OnRender(fElapsedTime);
-	RenderText();
+	RenderText(fTime);
 }
 
 
@@ -675,13 +688,6 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 }
 
 
-HRESULT OnInit(ID3D11Device* pd3dDevice)
-{
-    Redraw();
-
-    return S_OK;
-}
-
 //--------------------------------------------------------------------------------------
 // Handle key presses
 //--------------------------------------------------------------------------------------
@@ -749,17 +755,116 @@ std::wstring CreateWindowTitle()
     return utility::my_mbstowcs(windowtitle);
 }
 
-HRESULT RenderPoint(ID3D11Device* pd3dDevice)
+HRESULT RenderPoint()
 {
     auto hr = S_OK;
 
-	// Create vertex buffer
-    podr->RedrawFunc(0, reim);
+    auto const index = drawdata & 0x0F;
+        switch (pgd->L) {
+        case 0:
+            (*podr)(0, reim);
+            break;
 
+        case 1:
+        {
+            switch (index) {
+            case 1:
+                (*podr)(1, reim);
+                break;
+
+            case 2:
+                (*podr)(-1, reim);
+                break;
+
+            case 3:
+                (*podr)(0, reim);
+                break;
+
+            default:
+                BOOST_ASSERT(!"indexの指定がおかしい！");
+                break;
+            }
+        }
+        break;
+
+        case 2:
+        {
+            switch (index) {
+            case 1:
+                (*podr)(-2, reim);
+                break;
+
+            case 2:
+                (*podr)(-1, reim);
+                break;
+
+            case 3:
+                (*podr)(1, reim);
+                break;
+
+            case 4:
+                (*podr)(2, reim);
+                break;
+
+            case 5:
+                (*podr)(0, reim);
+                break;
+
+            default:
+                BOOST_ASSERT(!"indexの指定がおかしい！");
+                break;
+            }
+        }
+        break;
+
+        case 3:
+        {
+            switch (index) {
+            case 1:
+                (*podr)(1, reim);
+                break;
+
+            case 2:
+                (*podr)(-1, reim);
+                break;
+
+            case 3:
+                (*podr)(2, reim);
+                break;
+
+            case 4:
+                (*podr)(-2, reim);
+                break;
+
+            case 5:
+                (*podr)(3, reim);
+                break;
+
+            case 6:
+                (*podr)(-3, reim);
+                break;
+
+            case 7:
+                (*podr)(0, reim);
+                break;
+
+            default:
+                BOOST_ASSERT(!"indexの指定がおかしい！");
+                break;
+            }
+        }
+        break;
+
+        default:
+            BOOST_ASSERT(!"量子数の指定が異常です！");
+            break;
+        }
+
+	// Create vertex buffer
     D3D11_SUBRESOURCE_DATA InitData;
 	ZeroMemory(&InitData, sizeof(InitData));
     InitData.pSysMem = podr->Vertices().data();
-	V_RETURN(pd3dDevice->CreateBuffer(&g_bd, &InitData, pVertexBuffer.ReleaseAndGetAddressOf()));
+	V_RETURN(g_pd3dDevice->CreateBuffer(&g_bd, &InitData, pVertexBuffer.ReleaseAndGetAddressOf()));
 
 	return hr;
 }
@@ -793,18 +898,22 @@ void Redraw()
 
     // Create index buffer
 
+    static std::vector<std::int32_t> indices;
     indices.resize(podr->Vertexsize);
     std::iota(indices.begin(), indices.end(), 0);
 
-    ZeroMemory(&g_bd2, sizeof(g_bd2));
-    g_bd2.Usage = D3D11_USAGE_DEFAULT;
-    g_bd2.ByteWidth = static_cast<UINT>(sizeof(DWORD) * podr->Vertexsize);
-    g_bd2.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    g_bd2.CPUAccessFlags = 0;
-    g_bd2.MiscFlags = 0;
+    // バッファーリソース
+    D3D11_BUFFER_DESC bd;
+
+    ZeroMemory(&bd, sizeof(bd));
+    bd.Usage = D3D11_USAGE_DEFAULT;
+    bd.ByteWidth = static_cast<UINT>(sizeof(DWORD) * podr->Vertexsize);
+    bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    bd.CPUAccessFlags = 0;
+    bd.MiscFlags = 0;
     D3D11_SUBRESOURCE_DATA InitData;
     InitData.pSysMem = indices.data();
-    g_pd3dDevice->CreateBuffer(&g_bd2, &InitData, &pIndexBuffer);
+    g_pd3dDevice->CreateBuffer(&bd, &InitData, &pIndexBuffer);
 
     SetCamera();
 }
@@ -820,25 +929,36 @@ void RedrawFlagTrue()
 //--------------------------------------------------------------------------------------
 // Render the help and statistics text.
 //--------------------------------------------------------------------------------------
-void RenderText()
+void RenderText(double fTime)
 {
+    if (!podr->Complete && first) {
+        drawstarttime = fTime;
+        end = false;
+        first = false;
+    }
+    else if (podr->Complete && !end) {
+        drawendtime = fTime - drawstarttime;
+        end = true;
+    }
+
+    std::wstring str;
+    double calctime;
+    if (end) {
+        calctime = drawendtime;
+    }
+    else {
+        calctime = fTime - drawstarttime;
+    }
+
 	pTxtHelper->Begin();
 	pTxtHelper->SetInsertionPos(5, 5);
-	pTxtHelper->SetForegroundColor(Colors::White);
+	pTxtHelper->SetForegroundColor(Colors::Yellow);
 	pTxtHelper->DrawTextLine(DXUTGetFrameStats(DXUTIsVsyncEnabled()));
 	pTxtHelper->DrawTextLine(DXUTGetDeviceStats());
-	//pTxtHelper->DrawTextLine((boost::wformat(L"Number of atoms: %d") % armd.NumAtom).str().c_str());
-	//pTxtHelper->DrawTextLine((boost::wformat(L"Number of supercell: %d") % armd.Nc).str().c_str());
-	//pTxtHelper->DrawTextLine((boost::wformat(L"Number of MD step: %d") % armd.MD_iter).str().c_str());
-	//pTxtHelper->DrawTextLine((boost::wformat(L"Elapsed time: %.3f (ps)") % armd.getDeltat()).str().c_str());
-	//pTxtHelper->DrawTextLine((boost::wformat(L"Lattice constant: %.3f (nm)") % armd.getLatticeconst()).str().c_str());
-	//pTxtHelper->DrawTextLine((boost::wformat(L"Periodic length: %.3f (nm)") % armd.getPeriodiclen()).str().c_str());
-	//pTxtHelper->DrawTextLine((boost::wformat(L"Preset temperture: %.3f (K)") % armd.getTgiven()).str().c_str());
-	//pTxtHelper->DrawTextLine((boost::wformat(L"Calculation temperture: %.3f (K)") % armd.getTcalc()).str().c_str());
-	//pTxtHelper->DrawTextLine((boost::wformat(L"Kinetic energy: %.3f (Hartree)") % armd.Uk).str().c_str());
-	//pTxtHelper->DrawTextLine((boost::wformat(L"Potential energy: %.3f (Hartree)") % armd.Up).str().c_str());
-	//pTxtHelper->DrawTextLine((boost::wformat(L"Total energy: %.3f (Hartree)") % armd.Utot).str().c_str());
-	//pTxtHelper->DrawTextLine((boost::wformat(L"Pressure: %.3f (atm)") % armd.getPressure()).str().c_str());
+    pTxtHelper->DrawTextLine((boost::wformat(L"CPU threads: %d") % cputhreads).str().c_str());
+    pTxtHelper->DrawTextLine((boost::wformat(L"Total vertices = %d") % podr->Vertexsize()).str().c_str());
+    pTxtHelper->DrawTextLine((boost::wformat(L"Calculation time = %.3f(sec)") % calctime).str().c_str());
+
 	pTxtHelper->End();
 }
 
