@@ -1,8 +1,9 @@
-/*! \file orbitaldensityrand.cpp
-    \brief OrbitalDensityRand??????
-    Copyright � 2019 @dc1394 All Rights Reserved.
+﻿/*! \file orbitaldensityrand.cpp
+    \brief OrbitalDensityRandクラスの実装
+    Copyright © 2019 @dc1394 All Rights Reserved.
     This software is released under the BSD 2-Clause License.
 */
+
 #include "myrandom/myrandsfmt.h"
 #include "orbitaldensityrand.h"
 #include "utility/utility.h"
@@ -129,7 +130,7 @@ namespace orbitaldensityrand {
 					break;
 
 				default:
-                    BOOST_ASSERT(!"???????!");
+                    BOOST_ASSERT(!"何かがおかしい!");
 					break;
 				}
 
@@ -139,7 +140,7 @@ namespace orbitaldensityrand {
 			break;
 
 			default:
-                BOOST_ASSERT(!"???????!");
+                BOOST_ASSERT(!"何かがおかしい!");
 				break;
 			}
 
@@ -153,7 +154,7 @@ namespace orbitaldensityrand {
 				break;
 
 			default:
-                BOOST_ASSERT(!"???????!");
+                BOOST_ASSERT(!"何かがおかしい!");
 				break;
 			}
 
