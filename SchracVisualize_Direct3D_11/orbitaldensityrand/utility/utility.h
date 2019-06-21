@@ -13,7 +13,7 @@
 #include <array>        // for std::array
 #include <cstdint>      // for std::int32_t
 #include <string>       // for std::wstring
-#include <Windows.h>
+#include <Windows.h>    // for MAX_PATH
 
 namespace utility {
     //! A function.
@@ -52,7 +52,6 @@ namespace utility {
         \return ファイル選択ダイアログの戻り値
     */
     BOOL showFileDialog(HWND hWnd, wchar_t* filepath, wchar_t* filename, wchar_t const* title, wchar_t const* defextension);
-
 
     template <typename T>
     //! A struct.

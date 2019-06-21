@@ -4,7 +4,6 @@
     This software is released under the BSD 2-Clause License.
 */
 
-#include "DXUT.h"
 #include "myrandom/myrandsfmt.h"
 #include "orbitaldensityrand.h"
 #include "utility/utility.h"
@@ -131,7 +130,7 @@ namespace orbitaldensityrand {
 					break;
 
 				default:
-					BOOST_ASSERT(!"???????!");
+                    BOOST_ASSERT(!"???????!");
 					break;
 				}
 
@@ -141,7 +140,7 @@ namespace orbitaldensityrand {
 			break;
 
 			default:
-				BOOST_ASSERT(!"???????!");
+                BOOST_ASSERT(!"???????!");
 				break;
 			}
 
@@ -155,7 +154,7 @@ namespace orbitaldensityrand {
 				break;
 
 			default:
-				BOOST_ASSERT(!"???????!");
+                BOOST_ASSERT(!"???????!");
 				break;
 			}
 

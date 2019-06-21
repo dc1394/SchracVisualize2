@@ -214,11 +214,6 @@ auto reim = OrbitalDensityRand::Re_Im_type::REAL;
 
 //! A global variable.
 /*!
-*/
-auto ROT_FLAG = true;
-
-//! A global variable.
-/*!
     Device settings dialog
 */
 CD3DSettingsDlg settingsDlg;
@@ -237,7 +232,7 @@ CDXUTDialog ui;
 #define IDC_CHANGEDEVICE        2
 #define IDC_TOGGLEROTATION      3
 #define IDC_REDRAW              4
-#define IDC_READDATA            5
+#define IDC_LOADNEWFILE         5
 #define IDC_COMBOBOX            6
 #define IDC_RADIOA              7
 #define IDC_RADIOB              8
@@ -634,22 +629,18 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 		settingsDlg.SetActive(!settingsDlg.IsActive());
 		break;
 
-    case IDC_TOGGLEROTATION:
-        ROT_FLAG = !ROT_FLAG;
-        break;
-
     case IDC_REDRAW:
         RedrawFlagTrue();
         Redraw();
         break;
 
-    case IDC_READDATA:
+    case IDC_LOADNEWFILE:
         StopDraw();
         ReadData();
-        SetUI();
         podr.emplace(pgd);
         first = true;
         ::SetWindowText(DXUTGetHWND(), CreateWindowTitle().c_str());
+        Redraw();
         break;
 
     case IDC_COMBOBOX:
@@ -979,10 +970,9 @@ void SetUI()
 	auto iY = 10;
 	hud.AddButton(IDC_TOGGLEFULLSCREEN, L"Toggle full screen", 0, iY, 170, 22);
 	hud.AddButton(IDC_CHANGEDEVICE, L"Change device (F2)", 0, iY += 26, 170, 22, VK_F2);
-    hud.AddButton(IDC_TOGGLEROTATION, L"Toggle Rotaion Animation", 0, iY += 24, 200, 22);
 
     hud.AddButton(IDC_REDRAW, L"Redraw", 0, iY += 34, 170, 22);
-    hud.AddButton(IDC_READDATA, L"Load new file", 0, iY += 24, 170, 22);
+    hud.AddButton(IDC_LOADNEWFILE, L"Load new file", 0, iY += 24, 170, 22);
 
     // Combobox
     CDXUTComboBox* pCombo;
@@ -1046,7 +1036,7 @@ void SetUI()
     // 角度の調整
     hud.AddStatic(IDC_OUTPUT, L"Vertex size", 20, iY += 34, 125, 22);
     hud.GetStatic(IDC_OUTPUT)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
-    hud.AddSlider(IDC_SLIDER, 35, iY += 24, 125, 22, 0, 200000, OrbitalDensityRand::VERTEXSIZE_INIT_VALUE);
+    hud.AddSlider(IDC_SLIDER, 35, iY += 24, 125, 22, 0, 1000000, OrbitalDensityRand::VERTEXSIZE_INIT_VALUE);
 
 	ui.SetCallback(OnGUIEvent);
 }
