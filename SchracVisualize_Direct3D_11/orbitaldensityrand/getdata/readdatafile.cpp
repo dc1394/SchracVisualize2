@@ -1,10 +1,11 @@
 /*! \file readdatafile.cpp
     \brief ???????????????????????
 
-    Copyright © 2015 @dc1394 All Rights Reserved.
+    Copyright © 2015-2019 @dc1394 All Rights Reserved.
     This software is released under the BSD 2-Clause License.
 */
 
+#include "DXUT.h"
 #include "readdatafile.h"
 #include <array>                        // for std::array
 #include <fstream>                      // for std::ifstream
@@ -12,7 +13,7 @@
 #include <boost/algorithm/string.hpp>   // for boost::algorithm
 
 namespace getdata {
-    ReadDataFile::mypair ReadDataFile::readdatafile(std::string const & filename) const
+    ReadDataFile::mypair ReadDataFile::readdatafile(std::string const& filename) const
     {
         std::ifstream ifs(filename);
         std::array<char, BUFSIZE> buf;
@@ -20,7 +21,7 @@ namespace getdata {
 
         // ??????
         std::vector<std::string> tokens;
-        
+
         for (auto i = 0;; i++) {
             using namespace boost::algorithm;
 
@@ -28,7 +29,7 @@ namespace getdata {
             std::string line(buf.data());
 
             split(tokens, line, is_any_of(","), token_compress_on);
-                        
+
             // ?????????????
             if (!ifs.gcount() && !i) {
                 throw std::runtime_error("???????????!");
