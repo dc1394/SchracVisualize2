@@ -1,25 +1,23 @@
 ﻿================================================================================
-【 ソフト名 】LJ_Argon_MD_Drirect3D_11
+【 ソフト名 】SchracVisualize_Direct3D_11
 【  作成者  】@dc1394
 ================================================================================
 
 ★これは何？
-　アルゴンについて、リアルタイム古典分子動力学シミュレーションを行うコードです。
-　このコードは、ロボ太（@kaityo256）様の、分子動力学法ステップ・バイ・ステップ
-　（ https://github.com/kaityo256/mdstep ）を参考にさせて頂いています。
-　ビルドには、以下のライブラリが必要です。
+　「Schrac」の計算結果のアウトプットファイルを読み込み、可視化するコードです。ビ
+　ルドには、以下のライブラリが必要です。
 　・Boost C++ Libraries
-　・Eigen
+　・GNU Scientific Library (GSL)
 　・Intel® Threading Building Blocks (Intel® TBB)
 
 ★更新履歴
-　2018/8/3    ver.0.1　公開。
+　2019/6/22    ver.0.1　公開。
 
 ★ライセンス
 　このソフトはフリーソフトウェアです（2条項BSDライセンス）。
 --------------------------------------------------------------------------------
-　LJ_Argon_MD_Drirect3D_11
-　Copyright (C) 2018 @dc1394
+　SchracVisualize_Direct3D_11
+　Copyright (C) 2015-2019 @dc1394
 
 　ソースコード形式であれバイナリ形式であれ、変更の有無に関わらず、以下の条件を満
 　たす限りにおいて、再配布および利用を許可します。
@@ -40,7 +38,7 @@
 　な損害、特別損害、懲罰的損害または結果損害のいずれに対しても一切責任を負いませ
 　ん。
 
-  Copyright (c) 2018, @dc1394
+  Copyright (c) 2015-2019, @dc1394
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -65,12 +63,12 @@
   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --------------------------------------------------------------------------------
 
-　LJ_Argon_MD_Drirect3D_11にはMicrosoft社によるDXUTライブラリを使用しています。
+　SchracVisualize_Direct3D_11にはMicrosoft社によるDXUTライブラリを使用しています。
 　こちらのライセンスは MITライセンス になります。
 
                                The MIT License (MIT)
 
-Copyright (c) 2018 Microsoft Corp
+Copyright (c) 2004-2019 Microsoft Corp
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this 
 software and associated documentation files (the "Software"), to deal in the Software 
@@ -89,8 +87,8 @@ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTIO
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-  LJ_Argon_MD_Drirect3D_11にはBoostコミュニティによるBoost C++ Librariesを使用し
-  ています。こちらのライセンスは Boostライセンス になります。
+  SchracVisualize_Direct3D_11にはBoostコミュニティによるBoost C++ Librariesを使
+  用しています。こちらのライセンスは Boostライセンス になります。
 
 /* Boost Software License - Version 1.0 - August 17th, 2003
 *
@@ -117,9 +115,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 * DEALINGS IN THE SOFTWARE.
 */
 
-  LJ_Argon_MD_Drirect3D_11にはEigen projectによるEigenを使用しています。
-　こちらのライセンスは MPL2 になります。
-
-  LJ_Argon_MD_Drirect3D_11にはIntel CorporationによるIntel® Threading Building
-　Blocks(Intel® TBB)を使用しています。
+  SchracVisualize_Direct3D_11にはIntel CorporationによるIntel® Threading 
+  Building Blocks (Intel® TBB)を使用しています。
   こちらのライセンスは GNU General Public License, version 2 になります。

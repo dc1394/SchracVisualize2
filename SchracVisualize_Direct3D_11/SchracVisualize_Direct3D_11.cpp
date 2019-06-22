@@ -550,7 +550,7 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 	pd3dImmediateContext->VSSetConstantBuffers(0, 1, pCBChangesEveryFrame.GetAddressOf());
 	pd3dImmediateContext->PSSetShader(pPixelShaderBox.Get(), nullptr, 0);
 	pd3dImmediateContext->PSSetConstantBuffers(0, 1, pCBChangesEveryFrame.GetAddressOf());
-	pd3dImmediateContext->DrawIndexed(static_cast<UINT>(podr->Vertexsize), 0, 0);
+	pd3dImmediateContext->DrawIndexed(static_cast<UINT>(podr->Verticessize), 0, 0);
 
     OnRender(pd3dImmediateContext);
 
@@ -668,7 +668,7 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 
     case IDC_SLIDER:
         RedrawFlagTrue();
-        podr->Vertexsize(static_cast<std::vector<SimpleVertex>::size_type>((reinterpret_cast<CDXUTSlider*>(pControl))->GetValue()));
+        podr->Verticessize(static_cast<std::vector<SimpleVertex>::size_type>((reinterpret_cast<CDXUTSlider*>(pControl))->GetValue()));
         Redraw();
         break;
 
@@ -883,14 +883,14 @@ void Redraw()
 {
     ZeroMemory(&g_bd, sizeof(g_bd));
     g_bd.Usage = D3D11_USAGE_DEFAULT;
-    g_bd.ByteWidth = static_cast<UINT>(sizeof(SimpleVertex) * podr->Vertexsize);
+    g_bd.ByteWidth = static_cast<UINT>(sizeof(SimpleVertex) * podr->Verticessize);
     g_bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     g_bd.CPUAccessFlags = 0;
 
     // Create index buffer
 
     static std::vector<std::int32_t> indices;
-    indices.resize(podr->Vertexsize);
+    indices.resize(podr->Verticessize);
     std::iota(indices.begin(), indices.end(), 0);
 
     // バッファーリソース
@@ -898,7 +898,7 @@ void Redraw()
 
     ZeroMemory(&bd, sizeof(bd));
     bd.Usage = D3D11_USAGE_DEFAULT;
-    bd.ByteWidth = static_cast<UINT>(sizeof(DWORD) * podr->Vertexsize);
+    bd.ByteWidth = static_cast<UINT>(sizeof(DWORD) * podr->Verticessize);
     bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
     bd.CPUAccessFlags = 0;
     bd.MiscFlags = 0;
@@ -947,7 +947,7 @@ void RenderText(double fTime)
 	pTxtHelper->DrawTextLine(DXUTGetFrameStats(DXUTIsVsyncEnabled()));
 	pTxtHelper->DrawTextLine(DXUTGetDeviceStats());
     pTxtHelper->DrawTextLine((boost::wformat(L"CPU threads: %d") % cputhreads).str().c_str());
-    pTxtHelper->DrawTextLine((boost::wformat(L"Total vertices = %d") % podr->Vertexsize()).str().c_str());
+    pTxtHelper->DrawTextLine((boost::wformat(L"Total vertices = %d") % podr->Verticessize()).str().c_str());
     pTxtHelper->DrawTextLine((boost::wformat(L"Calculation time = %.3f(sec)") % calctime).str().c_str());
 
 	pTxtHelper->End();
@@ -1036,7 +1036,7 @@ void SetUI()
     // 角度の調整
     hud.AddStatic(IDC_OUTPUT, L"Vertex size", 20, iY += 34, 125, 22);
     hud.GetStatic(IDC_OUTPUT)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
-    hud.AddSlider(IDC_SLIDER, 35, iY += 24, 125, 22, 0, 1000000, OrbitalDensityRand::VERTEXSIZE_INIT_VALUE);
+    hud.AddSlider(IDC_SLIDER, 35, iY += 24, 125, 22, 0, 1000000, OrbitalDensityRand::VERTICESSIZE_INIT_VALUE);
 
 	ui.SetCallback(OnGUIEvent);
 }
