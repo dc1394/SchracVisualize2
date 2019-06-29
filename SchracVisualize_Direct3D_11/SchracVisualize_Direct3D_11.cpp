@@ -1,4 +1,4 @@
-﻿//--------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------
 // File: Tutorial08.cpp
 //
 // Basic introduction to DXUT
@@ -55,25 +55,25 @@ struct CBChangesEveryFrame2
 
 //! A global variable (constant).
 /*!
-    カメラの位置の倍率
+    ?????????
 */
 static auto constexpr MAGNIFICATION = 1.2f;
 
 //! A global variable (constant).
 /*!
-    画面サイズ（高さ）
+    ?????(??)
 */
 static auto constexpr WINDOWHEIGHT = 960;
 
 //! A global variable (constant).
 /*!
-    画面サイズ（幅）
+    ?????(?)
 */
 static auto constexpr WINDOWWIDTH = 1280;
 
 //! A global variable.
 /*!
-    CPUのスレッド数
+    CPU??????
 */
 static auto const cputhreads = tbb::task_scheduler_init::default_num_threads();
 
@@ -85,8 +85,8 @@ CModelViewerCamera camera;
 
 //! A lambda expression.
 /*!
-    CDXUTTextHelperへのポインタを解放するラムダ式
-    \param spline CDXUTTextHelperへのポインタ
+    CDXUTTextHelper???????????????
+    \param spline CDXUTTextHelper??????
 */
 static auto const deleter = [](auto ptxthelper) {
     if (ptxthelper) {
@@ -103,43 +103,43 @@ CDXUTDialogResourceManager dialogResourceManager;
 
 //! A global variable.
 /*!
-    描画する軌道の識別数値
+    ???????????
 */
 auto drawdata = 1U;
 
 //! A global variable.
 /*!
-    計算開始時間
+    ??????
 */
 double drawstarttime;
 
 //! A global variable.
 /*!
-    計算終了時間
+    ??????
 */
 double drawendtime;
 
 //! A global variable.
 /*!
-    計算が開始したことを示すフラグ
+    ???????????????
 */
 auto first = true;
 
 //! A global variable.
 /*!
-    計算が終了したことを示すフラグ
+    ???????????????
 */
 auto end = false;
 
 //! A global variable.
 /*!
-    バッファーリソース
+    ?????????
 */
 D3D11_BUFFER_DESC g_bd;
 
 //! A global variable.
 /*!
-    Direct3Dデバイス
+    Direct3D????
 */
 ID3D11Device* g_pd3dDevice;
 
@@ -161,37 +161,37 @@ Microsoft::WRL::ComPtr<ID3D11Buffer> pCBNeverChanges;
 
 //! A global variable.
 /*!
-    データオブジェクト
+    ?????????
 */
 std::shared_ptr<getdata::GetData> pgd;
 
 //! A global variable.
 /*!
-    インデックスバッファ
+    ??????????
 */
 Microsoft::WRL::ComPtr<ID3D11Buffer> pIndexBuffer;
 
 //! A global variable.
 /*!
-    軌道・電子密度の乱数生成クラスのオブジェクト
+    ??????????????????????
 */
 std::optional<OrbitalDensityRand> podr;
 
 //! A global variable.
 /*!
-    ピクセルシェーダー
+    ?????????
 */
 Microsoft::WRL::ComPtr<ID3D11PixelShader> pPixelShaderBox;
 
 //! A global variable.
 /*!
-    テキスト表示用
+    ???????
 */
 std::unique_ptr<CDXUTTextHelper, decltype(deleter)> pTxtHelper(nullptr, deleter);
 
 //! A global variable.
 /*!
-    頂点バッファ
+    ??????
 */
 Microsoft::WRL::ComPtr<ID3D11Buffer> pVertexBuffer;
 
@@ -202,13 +202,13 @@ Microsoft::WRL::ComPtr<ID3D11InputLayout> pVertexLayout;
 
 //! A global variable.
 /*!
-    バーテックスシェーダー
+    ???????????
 */
 Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShaderBox;
 
 //! A global variable.
 /*!
-    実部と虚部のどちらを描画するか
+    ???????????????
 */
 auto reim = OrbitalDensityRand::Re_Im_type::REAL;
 
@@ -246,8 +246,8 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 
 //! A function.
 /*!
-    ウィンドウタイトルを生成する
-    \return ウィンドウタイトル
+    ??????????????
+    \return ?????????
 */
 std::wstring CreateWindowTitle();
 
@@ -259,58 +259,58 @@ void InitApp();
 
 //! A function.
 /*!
-    描画する
-    \param pd3dImmediateContext Direct3Dのデバイスコンテキスト
+    ????
+    \param pd3dImmediateContext Direct3D???????????
 */
 HRESULT OnRender(ID3D11DeviceContext* pd3dImmediateContext);
 
 //! A function.
 /*!
-    テキストファイルからデータを読み込む
+    ??????????????????
 */
 void ReadData();
 
 //! A function.
 /*!
-    再描画する
-    \param pd3dDevice Direct3Dデバイス
+    ?????
+    \param pd3dDevice Direct3D????
 */
 void Redraw();
 
 //! A function.
 /*!
-    再描画フラグをtrueにする
+    ???????true???
 */
 void RedrawFlagTrue();
 
 //! A function.
 /*!
-    画面の左上に情報を表示する
+    ?????????????
 */
 void RenderText(double fTime);
 
 //! A function.
 /*!
-	点を描画する
-	\param pd3dDevice Direct3Dデバイス
+	??????
+	\param pd3dDevice Direct3D????
 */
 HRESULT RenderPoint();
 
 //! A function.
 /*!
-    カメラの位置をセットする
+    ????????????
 */
 void SetCamera();
 
 //! A function.
 /*!
-    UIを配置する
+    UI?????
 */
 void SetUI();
 
 //! A function.
 /*!
-    描画を中止する
+    ???????
 */
 void StopDraw();
 
@@ -586,9 +586,9 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain( ID3D11Device* pd3dDevice, IDXGISwapCha
 	camera.SetWindow(pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height);
 	camera.SetButtonMasks(MOUSE_MIDDLE_BUTTON, MOUSE_WHEEL, MOUSE_LEFT_BUTTON);
 
-	hud.SetLocation(pBackBufferSurfaceDesc->Width - 170, 0);
+	hud.SetLocation(static_cast<std::int32_t>(pBackBufferSurfaceDesc->Width) - 170, 0);
 	hud.SetSize(170, 170);
-	ui.SetLocation(pBackBufferSurfaceDesc->Width - 170, pBackBufferSurfaceDesc->Height - 300);
+	ui.SetLocation(static_cast<std::int32_t>(pBackBufferSurfaceDesc->Width) - 170, static_cast<std::int32_t>(pBackBufferSurfaceDesc->Height) - 300);
 	ui.SetSize(170, 300);
 
     return hr;
@@ -673,7 +673,7 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
         break;
 
 	default:
-		BOOST_ASSERT(!"何かがおかしい!");
+		BOOST_ASSERT(!"???????!");
 		break;
 	}
 }
@@ -772,7 +772,7 @@ HRESULT RenderPoint()
                 break;
 
             default:
-                BOOST_ASSERT(!"indexの指定がおかしい！");
+                BOOST_ASSERT(!"index????????!");
                 break;
             }
         }
@@ -802,7 +802,7 @@ HRESULT RenderPoint()
                 break;
 
             default:
-                BOOST_ASSERT(!"indexの指定がおかしい！");
+                BOOST_ASSERT(!"index????????!");
                 break;
             }
         }
@@ -840,14 +840,14 @@ HRESULT RenderPoint()
                 break;
 
             default:
-                BOOST_ASSERT(!"indexの指定がおかしい！");
+                BOOST_ASSERT(!"index????????!");
                 break;
             }
         }
         break;
 
         default:
-            BOOST_ASSERT(!"量子数の指定が異常です！");
+            BOOST_ASSERT(!"???????????!");
             break;
         }
 
@@ -868,7 +868,7 @@ void ReadData()
             pgd = std::make_shared<getdata::GetData>(utility::myOpenFile());
         }
         catch (std::runtime_error const & e) {
-            ::MessageBox(nullptr, utility::my_mbstowcs(e.what()).c_str(), L"エラー", MB_OK | MB_ICONWARNING);
+            ::MessageBox(nullptr, utility::my_mbstowcs(e.what()).c_str(), L"???", MB_OK | MB_ICONWARNING);
             continue;
         }
         break;
@@ -877,7 +877,7 @@ void ReadData()
 
 //! A function.
 /*!
-    再描画する
+    ?????
 */
 void Redraw()
 {
@@ -893,7 +893,7 @@ void Redraw()
     indices.resize(podr->Verticessize);
     std::iota(indices.begin(), indices.end(), 0);
 
-    // バッファーリソース
+    // ?????????
     D3D11_BUFFER_DESC bd;
 
     ZeroMemory(&bd, sizeof(bd));
@@ -1022,7 +1022,7 @@ void SetUI()
         break;
 
         default:
-            throw std::runtime_error("g以上の軌道には対応していません");
+            throw std::runtime_error("g???????????????");
             break;
         }
 
@@ -1033,8 +1033,8 @@ void SetUI()
         }
     }
 
-    // 角度の調整
-    hud.AddStatic(IDC_OUTPUT, L"Vertex size", 20, iY += 34, 125, 22);
+    // ?????
+    hud.AddStatic(IDC_OUTPUT, L"Vertices size", 20, iY += 34, 125, 22);
     hud.GetStatic(IDC_OUTPUT)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
     hud.AddSlider(IDC_SLIDER, 35, iY += 24, 125, 22, 0, 1000000, OrbitalDensityRand::VERTICESSIZE_INIT_VALUE);
 
@@ -1084,7 +1084,7 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	InitApp();
 
-	// ウィンドウを生成
+	// ????????
 	auto const dispx = ::GetSystemMetrics(SM_CXSCREEN);
 	auto const dispy = ::GetSystemMetrics(SM_CYSCREEN);
 	auto const xpos = (dispx - WINDOWWIDTH) / 2;
