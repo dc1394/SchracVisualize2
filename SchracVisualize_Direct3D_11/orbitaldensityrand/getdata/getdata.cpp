@@ -1,7 +1,7 @@
-﻿/*! \file getdata.h
-    \brief rのメッシュと、そのメッシュにおける電子密度を与えるクラスの実装
+/*! \file getdata.h
+    \brief r???????????????????????????????
 
-    Copyright © 2015-2019 @dc1394 All Rights Reserved.
+    Copyright � 2015-2019 @dc1394 All Rights Reserved.
     This software is released under the BSD 2-Clause License.
 */
 
@@ -13,7 +13,7 @@
 #include <boost/range/algorithm.hpp>    // for boost::max_element
 
 namespace getdata {
-    // #region コンストラクタ
+    // #region ???????
 
     GetData::GetData(std::string const & filename) :
         Atomname([this] { return std::cref(atomname_); }, nullptr),
@@ -29,9 +29,10 @@ namespace getdata {
     {
         using namespace boost::algorithm;
 
-        // トークン分割
-        std::vector<std::string> tokens;
-        split(tokens, filename, is_any_of("_"), token_compress_on);
+        // ??????
+        std::vector<std::string> tokenstmp, tokens;
+        split(tokenstmp, filename, is_any_of("\\"), token_compress_on);
+        split(tokens, tokenstmp.back(), is_any_of("_"), token_compress_on);
 
         if (tokens[0].find("rho") != std::string::npos) {
             rho_wf_type_ = GetData::Rho_Wf_type::RHO;
@@ -40,7 +41,7 @@ namespace getdata {
             rho_wf_type_ = GetData::Rho_Wf_type::WF;
         }
         else {
-            throw std::runtime_error("ファイル名が異常です！");
+            throw std::runtime_error("??????????!");
         }
 
         if (tokens[1] == "H") {
@@ -50,7 +51,7 @@ namespace getdata {
             atomname_ = "Helium";
         }
         else {
-            throw std::runtime_error("ファイル名が異常です！");
+            throw std::runtime_error("??????????!");
         }
 
         orbital_ = tokens[2][0];
@@ -83,7 +84,7 @@ namespace getdata {
             break;
 
         default:
-            throw std::runtime_error("ファイル名が異常です！");
+            throw std::runtime_error("??????????!");
             break;
         }
 
@@ -106,14 +107,14 @@ namespace getdata {
         gsl_spline_init(spline_.get(), r_mesh.data(), phi.data(), r_mesh.size());
     }
 
-    // #endregion コンストラクタ
+    // #endregion ???????
 
-    // #region メンバ関数
+    // #region ?????
 
     double GetData::operator()(double r) const
     {
         return gsl_spline_eval(spline_.get(), r, acc_.get());
     }
 
-    // #endsregion メンバ関数
+    // #endsregion ?????
 }
