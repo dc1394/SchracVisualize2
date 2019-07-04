@@ -241,7 +241,8 @@
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>copy SchracVisualize_Direct3D_11.fx ..\Release
-copy Font.dds ..\Release</Command>
+copy Font.dds ..\Release
+copy document\readme_x86.txt ..\Release</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|X64'">
@@ -288,7 +289,8 @@ copy Font.dds ..\Release</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>copy SchracVisualize_Direct3D_11.fx ..\x64\Release
-copy Font.dds ..\x64\Release</Command>
+copy Font.dds ..\x64\Release
+copy document\readme_x64.txt ..\x64\Release</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
@@ -403,6 +405,10 @@ copy Font.dds ..\x64\Release</Command>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Font.dds" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="document\readme_x64.txt" />
+    <Text Include="document\readme_x86.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

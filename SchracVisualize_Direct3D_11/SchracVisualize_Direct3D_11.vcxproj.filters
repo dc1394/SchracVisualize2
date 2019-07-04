@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="SchracVisualize_Direct3D_11.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CLInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SchracVisualize_Direct3D_11.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Font.dds" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\DXUT\Optional\directx.ico" />
+    <None Include="..\README.md" />
+    <None Include="SchracVisualize_Direct3D_11.fx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="document">
+      <UniqueIdentifier>{8e56c2a7-6b88-4581-b578-ce238000bdf7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="document\readme_x86.txt">
+      <Filter>document</Filter>
+    </Text>
+    <Text Include="document\readme_x64.txt">
+      <Filter>document</Filter>
+    </Text>
+  </ItemGroup>
+</Project>
