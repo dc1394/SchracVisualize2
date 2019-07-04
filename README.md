@@ -118,3 +118,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   SchracVisualize_Direct3D_11にはIntel CorporationによるIntel® Threading 
   Building Blocks (Intel® TBB)を使用しています。
   こちらのライセンスは GNU General Public License, version 2 になります。
+
+  SchracVisualize_Direct3D_11には松本眞教授と斎藤睦夫さんによるSIMD-oriented
+  Fast Mersenne Twister (SFMT)を使用しています。こちらのライセンスは修正BSDライ
+  センスになります。
