@@ -20,21 +20,21 @@ namespace orbitaldensityrand {
 		    Thread_end(nullptr, [this](auto thread_end) { 
 			    thread_end_.store(thread_end);
 			    return thread_end; }),
-            Vertices([this] { return std::cref(vertices_); }, nullptr),
-		    Verticessize([this]{ return verticessize_.load(); }, [this](std::vector<SimpleVertex>::size_type size) { 
-				verticessize_.store(size);
+            Vertex([this] { return std::cref(vertex_); }, nullptr),
+		    Vertexsize([this]{ return vertexsize_.load(); }, [this](std::vector<SimpleVertex>::size_type size) { 
+				vertexsize_.store(size);
 				return size; }),
             pgd_(pgd),
 		    rmax_(GetRmax(pgd)),
-		    vertices_(VERTICESSIZE_INIT_VALUE)
+		    vertex_(VERTEXSIZE_INIT_VALUE)
     {
     }
 
     void OrbitalDensityRand::operator()(std::int32_t m, OrbitalDensityRand::Re_Im_type reim)
     {
         if (redraw_) {
-            if (vertices_.size() != verticessize_) {
-                vertices_.resize(verticessize_);
+            if (vertex_.size() != vertexsize_) {
+                vertex_.resize(vertexsize_);
             }
 
             pth_.reset(new std::thread([this, m, reim] { ClearFillSimpleVertex(m, reim); }), [this](std::thread * pth)
@@ -58,13 +58,13 @@ namespace orbitaldensityrand {
 		SimpleVertex sv{};
 		sv.Color = { 0.0f, 0.0f, 0.0f, 0.0f };
 		sv.Pos = { 0.0f, 0.0f, 0.0f };
-		boost::fill(vertices_, sv);
+		boost::fill(vertex_, sv);
 
         tbb::parallel_for(
-            tbb::blocked_range<int>(0, static_cast<std::int32_t>(verticessize_.load())),
+            tbb::blocked_range<int>(0, static_cast<std::int32_t>(vertexsize_.load())),
         [this, m, reim](auto const & range) {
                 for (auto && i = range.begin(); i != range.end(); ++i) {
-                    FillSimpleVertex(m, reim, vertices_[i]);
+                    FillSimpleVertex(m, reim, vertex_[i]);
                 }
             });
 

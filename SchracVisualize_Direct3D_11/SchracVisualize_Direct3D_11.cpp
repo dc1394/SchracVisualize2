@@ -1,4 +1,4 @@
-//--------------------------------------------------------------------------------------
+ï»¿//--------------------------------------------------------------------------------------
 // File: Tutorial08.cpp
 //
 // Basic introduction to DXUT
@@ -54,25 +54,25 @@ struct CBChangesEveryFrame2
 
 //! A global variable (constant).
 /*!
-    ƒJƒƒ‰‚ÌˆÊ’u‚Ì”{—¦
+    ã‚«ãƒ¡ãƒ©ã®ä½ç½®ã®å€ç‡
 */
 static auto constexpr MAGNIFICATION = 1.2f;
 
 //! A global variable (constant).
 /*!
-    ‰æ–ÊƒTƒCƒYi‚‚³j
+    ç”»é¢ã‚µã‚¤ã‚ºï¼ˆé«˜ã•ï¼‰
 */
 static auto constexpr WINDOWHEIGHT = 960;
 
 //! A global variable (constant).
 /*!
-    ‰æ–ÊƒTƒCƒYi•j
+    ç”»é¢ã‚µã‚¤ã‚ºï¼ˆå¹…ï¼‰
 */
 static auto constexpr WINDOWWIDTH = 1280;
 
 //! A global variable.
 /*!
-    CPU‚ÌƒXƒŒƒbƒh”
+    CPUã®ã‚¹ãƒ¬ãƒƒãƒ‰æ•°
 */
 static auto const cputhreads = tbb::task_scheduler_init::default_num_threads();
 
@@ -84,8 +84,8 @@ CModelViewerCamera camera;
 
 //! A lambda expression.
 /*!
-    CDXUTTextHelper‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ğ‰ğ•ú‚·‚éƒ‰ƒ€ƒ_®
-    \param spline CDXUTTextHelper‚Ö‚Ìƒ|ƒCƒ“ƒ^
+    CDXUTTextHelperã¸ã®ãƒã‚¤ãƒ³ã‚¿ã‚’è§£æ”¾ã™ã‚‹ãƒ©ãƒ ãƒ€å¼
+    \param spline CDXUTTextHelperã¸ã®ãƒã‚¤ãƒ³ã‚¿
 */
 static auto const deleter = [](auto ptxthelper) {
     if (ptxthelper) {
@@ -102,43 +102,43 @@ CDXUTDialogResourceManager dialogResourceManager;
 
 //! A global variable.
 /*!
-    •`‰æ‚·‚é‹O“¹‚Ì¯•Ê”’l
+    æç”»ã™ã‚‹è»Œé“ã®è­˜åˆ¥æ•°å€¤
 */
 auto drawdata = 1U;
 
 //! A global variable.
 /*!
-    ŒvZŠJnŠÔ
+    è¨ˆç®—é–‹å§‹æ™‚é–“
 */
 double drawstarttime;
 
 //! A global variable.
 /*!
-    ŒvZI—¹ŠÔ
+    è¨ˆç®—çµ‚äº†æ™‚é–“
 */
 double drawendtime;
 
 //! A global variable.
 /*!
-    ŒvZ‚ªŠJn‚µ‚½‚±‚Æ‚ğ¦‚·ƒtƒ‰ƒO
+    è¨ˆç®—ãŒé–‹å§‹ã—ãŸã“ã¨ã‚’ç¤ºã™ãƒ•ãƒ©ã‚°
 */
 auto first = true;
 
 //! A global variable.
 /*!
-    ŒvZ‚ªI—¹‚µ‚½‚±‚Æ‚ğ¦‚·ƒtƒ‰ƒO
+    è¨ˆç®—ãŒçµ‚äº†ã—ãŸã“ã¨ã‚’ç¤ºã™ãƒ•ãƒ©ã‚°
 */
 auto end = false;
 
 //! A global variable.
 /*!
-    ƒoƒbƒtƒ@[ƒŠƒ\[ƒX
+    ãƒãƒƒãƒ•ã‚¡ãƒ¼ãƒªã‚½ãƒ¼ã‚¹
 */
 D3D11_BUFFER_DESC g_bd;
 
 //! A global variable.
 /*!
-    Direct3DƒfƒoƒCƒX
+    Direct3Dãƒ‡ãƒã‚¤ã‚¹
 */
 ID3D11Device* g_pd3dDevice;
 
@@ -160,37 +160,37 @@ Microsoft::WRL::ComPtr<ID3D11Buffer> pCBNeverChanges;
 
 //! A global variable.
 /*!
-    ƒf[ƒ^ƒIƒuƒWƒFƒNƒg
+    ãƒ‡ãƒ¼ã‚¿ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
 */
 std::shared_ptr<getdata::GetData> pgd;
 
 //! A global variable.
 /*!
-    ƒCƒ“ƒfƒbƒNƒXƒoƒbƒtƒ@
+    ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒãƒƒãƒ•ã‚¡
 */
 Microsoft::WRL::ComPtr<ID3D11Buffer> pIndexBuffer;
 
 //! A global variable.
 /*!
-    ‹O“¹E“dq–§“x‚Ì—”¶¬ƒNƒ‰ƒX‚ÌƒIƒuƒWƒFƒNƒg
+    è»Œé“ãƒ»é›»å­å¯†åº¦ã®ä¹±æ•°ç”Ÿæˆã‚¯ãƒ©ã‚¹ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
 */
 std::optional<OrbitalDensityRand> podr;
 
 //! A global variable.
 /*!
-    ƒsƒNƒZƒ‹ƒVƒF[ƒ_[
+    ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
 */
 Microsoft::WRL::ComPtr<ID3D11PixelShader> pPixelShaderBox;
 
 //! A global variable.
 /*!
-    ƒeƒLƒXƒg•\¦—p
+    ãƒ†ã‚­ã‚¹ãƒˆè¡¨ç¤ºç”¨
 */
 std::unique_ptr<CDXUTTextHelper, decltype(deleter)> pTxtHelper(nullptr, deleter);
 
 //! A global variable.
 /*!
-    ’¸“_ƒoƒbƒtƒ@
+    é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡
 */
 Microsoft::WRL::ComPtr<ID3D11Buffer> pVertexBuffer;
 
@@ -201,13 +201,13 @@ Microsoft::WRL::ComPtr<ID3D11InputLayout> pVertexLayout;
 
 //! A global variable.
 /*!
-    ƒo[ƒeƒbƒNƒXƒVƒF[ƒ_[
+    ãƒãƒ¼ãƒ†ãƒƒã‚¯ã‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
 */
 Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShaderBox;
 
 //! A global variable.
 /*!
-    À•”‚Æ‹••”‚Ì‚Ç‚¿‚ç‚ğ•`‰æ‚·‚é‚©
+    å®Ÿéƒ¨ã¨è™šéƒ¨ã®ã©ã¡ã‚‰ã‚’æç”»ã™ã‚‹ã‹
 */
 auto reim = OrbitalDensityRand::Re_Im_type::REAL;
 
@@ -245,8 +245,8 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 
 //! A function.
 /*!
-    ƒEƒBƒ“ƒhƒEƒ^ƒCƒgƒ‹‚ğ¶¬‚·‚é
-    \return ƒEƒBƒ“ƒhƒEƒ^ƒCƒgƒ‹
+    ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¿ã‚¤ãƒˆãƒ«ã‚’ç”Ÿæˆã™ã‚‹
+    \return ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¿ã‚¤ãƒˆãƒ«
 */
 std::wstring CreateWindowTitle();
 
@@ -258,56 +258,56 @@ void InitApp();
 
 //! A function.
 /*!
-    •`‰æ‚·‚é
-    \param pd3dImmediateContext Direct3D‚ÌƒfƒoƒCƒXƒRƒ“ƒeƒLƒXƒg
+    æç”»ã™ã‚‹
+    \param pd3dImmediateContext Direct3Dã®ãƒ‡ãƒã‚¤ã‚¹ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆ
 */
 HRESULT OnRender(ID3D11DeviceContext* pd3dImmediateContext);
 
 //! A function.
 /*!
-    ƒeƒLƒXƒgƒtƒ@ƒCƒ‹‚©‚çƒf[ƒ^‚ğ“Ç‚İ‚Ş
+    ãƒ†ã‚­ã‚¹ãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã‚€
 */
 void ReadData();
 
 //! A function.
 /*!
-    Ä•`‰æ‚·‚é
+    å†æç”»ã™ã‚‹
 */
 void Redraw();
 
 //! A function.
 /*!
-    Ä•`‰æƒtƒ‰ƒO‚ğtrue‚É‚·‚é
+    å†æç”»ãƒ•ãƒ©ã‚°ã‚’trueã«ã™ã‚‹
 */
 void RedrawFlagTrue();
 
 //! A function.
 /*!
-    ‰æ–Ê‚Ì¶ã‚Éî•ñ‚ğ•\¦‚·‚é
+    ç”»é¢ã®å·¦ä¸Šã«æƒ…å ±ã‚’è¡¨ç¤ºã™ã‚‹
 */
 void RenderText(double fTime);
 
 //! A function.
 /*!
-    “_‚ğ•`‰æ‚·‚é
+    ç‚¹ã‚’æç”»ã™ã‚‹
 */
 HRESULT RenderPoint();
 
 //! A function.
 /*!
-    ƒJƒƒ‰‚ÌˆÊ’u‚ğƒZƒbƒg‚·‚é
+    ã‚«ãƒ¡ãƒ©ã®ä½ç½®ã‚’ã‚»ãƒƒãƒˆã™ã‚‹
 */
 void SetCamera();
 
 //! A function.
 /*!
-    UI‚ğ”z’u‚·‚é
+    UIã‚’é…ç½®ã™ã‚‹
 */
 void SetUI();
 
 //! A function.
 /*!
-    •`‰æ‚ğ’†~‚·‚é
+    æç”»ã‚’ä¸­æ­¢ã™ã‚‹
 */
 void StopDraw();
 
@@ -547,7 +547,7 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
     pd3dImmediateContext->VSSetConstantBuffers(0, 1, pCBChangesEveryFrame.GetAddressOf());
     pd3dImmediateContext->PSSetShader(pPixelShaderBox.Get(), nullptr, 0);
     pd3dImmediateContext->PSSetConstantBuffers(0, 1, pCBChangesEveryFrame.GetAddressOf());
-    pd3dImmediateContext->DrawIndexed(static_cast<UINT>(podr->Verticessize), 0, 0);
+    pd3dImmediateContext->DrawIndexed(static_cast<UINT>(podr->Vertexsize), 0, 0);
 
     OnRender(pd3dImmediateContext);
 
@@ -668,12 +668,12 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 
     case IDC_SLIDER:
         RedrawFlagTrue();
-        podr->Verticessize(static_cast<std::vector<SimpleVertex>::size_type>((dynamic_cast<CDXUTSlider*>(pControl))->GetValue()));
+        podr->Vertexsize(static_cast<std::vector<SimpleVertex>::size_type>((dynamic_cast<CDXUTSlider*>(pControl))->GetValue()));
         Redraw();
         break;
 
     default:
-        BOOST_ASSERT(!"‰½‚©‚ª‚¨‚©‚µ‚¢!");
+        BOOST_ASSERT(!"ä½•ã‹ãŒãŠã‹ã—ã„!");
         break;
     }
 }
@@ -772,7 +772,7 @@ HRESULT RenderPoint()
             break;
 
         default:
-            BOOST_ASSERT(!"index‚Ìw’è‚ª‚¨‚©‚µ‚¢I");
+            BOOST_ASSERT(!"indexã®æŒ‡å®šãŒãŠã‹ã—ã„ï¼");
             break;
         }
     }
@@ -802,7 +802,7 @@ HRESULT RenderPoint()
             break;
 
         default:
-            BOOST_ASSERT(!"index‚Ìw’è‚ª‚¨‚©‚µ‚¢I");
+            BOOST_ASSERT(!"indexã®æŒ‡å®šãŒãŠã‹ã—ã„ï¼");
             break;
         }
     }
@@ -840,21 +840,21 @@ HRESULT RenderPoint()
             break;
 
         default:
-            BOOST_ASSERT(!"index‚Ìw’è‚ª‚¨‚©‚µ‚¢I");
+            BOOST_ASSERT(!"indexã®æŒ‡å®šãŒãŠã‹ã—ã„ï¼");
             break;
         }
     }
     break;
 
     default:
-        BOOST_ASSERT(!"—Êq”‚Ìw’è‚ªˆÙí‚Å‚·I");
+        BOOST_ASSERT(!"é‡å­æ•°ã®æŒ‡å®šãŒç•°å¸¸ã§ã™ï¼");
         break;
     }
 
     // Create vertex buffer
     D3D11_SUBRESOURCE_DATA InitData;
     ZeroMemory(&InitData, sizeof(InitData));
-    InitData.pSysMem = podr->Vertices().data();
+    InitData.pSysMem = podr->Vertex().data();
     V_RETURN(g_pd3dDevice->CreateBuffer(&g_bd, &InitData, pVertexBuffer.ReleaseAndGetAddressOf()));
 
     return hr;
@@ -868,7 +868,7 @@ void ReadData()
             pgd = std::make_shared<getdata::GetData>(utility::myOpenFile());
         }
         catch (std::runtime_error const & e) {
-            ::MessageBox(nullptr, utility::my_mbstowcs(e.what()).c_str(), L"ƒGƒ‰[", MB_OK | MB_ICONWARNING);
+            ::MessageBox(nullptr, utility::my_mbstowcs(e.what()).c_str(), L"ã‚¨ãƒ©ãƒ¼", MB_OK | MB_ICONWARNING);
             continue;
         }
         break;
@@ -877,28 +877,28 @@ void ReadData()
 
 //! A function.
 /*!
-    Ä•`‰æ‚·‚é
+    å†æç”»ã™ã‚‹
 */
 void Redraw()
 {
     ZeroMemory(&g_bd, sizeof(g_bd));
     g_bd.Usage = D3D11_USAGE_DEFAULT;
-    g_bd.ByteWidth = static_cast<UINT>(sizeof(SimpleVertex) * podr->Verticessize);
+    g_bd.ByteWidth = static_cast<UINT>(sizeof(SimpleVertex) * podr->Vertexsize);
     g_bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     g_bd.CPUAccessFlags = 0;
 
     // Create index buffer
 
     static std::vector<std::int32_t> indices;
-    indices.resize(podr->Verticessize);
+    indices.resize(podr->Vertexsize);
     std::iota(indices.begin(), indices.end(), 0);
 
-    // ƒoƒbƒtƒ@[ƒŠƒ\[ƒX
+    // ãƒãƒƒãƒ•ã‚¡ãƒ¼ãƒªã‚½ãƒ¼ã‚¹
     D3D11_BUFFER_DESC bd;
 
     ZeroMemory(&bd, sizeof(bd));
     bd.Usage = D3D11_USAGE_DEFAULT;
-    bd.ByteWidth = static_cast<UINT>(sizeof(DWORD) * podr->Verticessize);
+    bd.ByteWidth = static_cast<UINT>(sizeof(DWORD) * podr->Vertexsize);
     bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
     bd.CPUAccessFlags = 0;
     bd.MiscFlags = 0;
@@ -947,7 +947,7 @@ void RenderText(double fTime)
     pTxtHelper->DrawTextLine(DXUTGetFrameStats(DXUTIsVsyncEnabled()));
     pTxtHelper->DrawTextLine(DXUTGetDeviceStats());
     pTxtHelper->DrawTextLine((boost::wformat(L"CPU threads: %d") % cputhreads).str().c_str());
-    pTxtHelper->DrawTextLine((boost::wformat(L"Total vertices = %d") % podr->Verticessize()).str().c_str());
+    pTxtHelper->DrawTextLine((boost::wformat(L"Total vertices = %d") % podr->Vertexsize()).str().c_str());
     pTxtHelper->DrawTextLine((boost::wformat(L"Calculation time = %.3f(sec)") % calctime).str().c_str());
 
     pTxtHelper->End();
@@ -1022,7 +1022,7 @@ void SetUI()
         break;
 
         default:
-            throw std::runtime_error("gˆÈã‚Ì‹O“¹‚É‚Í‘Î‰‚µ‚Ä‚¢‚Ü‚¹‚ñ");
+            throw std::runtime_error("gä»¥ä¸Šã®è»Œé“ã«ã¯å¯¾å¿œã—ã¦ã„ã¾ã›ã‚“");
             break;
         }
 
@@ -1033,10 +1033,10 @@ void SetUI()
         }
     }
 
-    // Šp“x‚Ì’²®
+    // è§’åº¦ã®èª¿æ•´
     hud.AddStatic(IDC_OUTPUT, L"Vertex size", 20, iY += 34, 125, 22);
     hud.GetStatic(IDC_OUTPUT)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
-    hud.AddSlider(IDC_SLIDER, 35, iY += 24, 125, 22, 0, 1000000, OrbitalDensityRand::VERTICESSIZE_INIT_VALUE);
+    hud.AddSlider(IDC_SLIDER, 35, iY += 24, 125, 22, 0, 1000000, OrbitalDensityRand::VERTEXSIZE_INIT_VALUE);
 
     ui.SetCallback(OnGUIEvent);
 }
@@ -1084,7 +1084,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
     InitApp();
 
-    // ƒEƒBƒ“ƒhƒE‚ğ¶¬
+    // ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’ç”Ÿæˆ
     auto const dispx = ::GetSystemMetrics(SM_CXSCREEN);
     auto const dispy = ::GetSystemMetrics(SM_CYSCREEN);
     auto const xpos = (dispx - WINDOWWIDTH) / 2;

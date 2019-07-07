@@ -135,13 +135,13 @@ namespace orbitaldensityrand {
         /*!
             頂点へのプロパティ
         */
-        utility::Property<std::vector<SimpleVertex> const&> Vertices;
+        utility::Property<std::vector<SimpleVertex> const&> Vertex;
 
         //! A property.
         /*!
             頂点数へのプロパティ
         */
-        utility::Property<std::vector<SimpleVertex>::size_type> Verticessize;
+        utility::Property<std::vector<SimpleVertex>::size_type> Vertexsize;
 
         // #endregion プロパティ
 
@@ -152,7 +152,7 @@ namespace orbitaldensityrand {
         /*!
             頂点数の初期値
         */
-        static std::vector<SimpleVertex>::size_type const VERTICESSIZE_INIT_VALUE = 100000;
+        static std::vector<SimpleVertex>::size_type const VERTEXSIZE_INIT_VALUE = 100000;
 
     private:
         //! A private member variable.
@@ -195,13 +195,13 @@ namespace orbitaldensityrand {
         /*!
             頂点数
         */
-        std::atomic<std::vector<SimpleVertex>::size_type> verticessize_ = VERTICESSIZE_INIT_VALUE;
+        std::atomic<std::vector<SimpleVertex>::size_type> vertexsize_ = VERTEXSIZE_INIT_VALUE;
 
         //! A private member variable.
         /*!
             vertex buffer
         */
-        std::vector<SimpleVertex> vertices_;
+        std::vector<SimpleVertex> vertex_;
 
     public:
         // #region 禁止されたコンストラクタ・メンバ関数
