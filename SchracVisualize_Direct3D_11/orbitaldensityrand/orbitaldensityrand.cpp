@@ -4,12 +4,10 @@
     This software is released under the BSD 2-Clause License.
 */
 
-#include "myrandom/myrandsfmt.h"
 #include "orbitaldensityrand.h"
 #include "utility/utility.h"
 #include <boost/math/special_functions/spherical_harmonic.hpp>  // for boost::math::spherical_harmonic
 #include <boost/range/algorithm.hpp>                            // for boost::fill
-#include <tbb/parallel_for.h>                                   // for tbb::parallel_for
 
 namespace orbitaldensityrand {
 	OrbitalDensityRand::OrbitalDensityRand(std::shared_ptr<getdata::GetData> const & pgd)
@@ -26,6 +24,8 @@ namespace orbitaldensityrand {
 				return size; }),
             pgd_(pgd),
 		    rmax_(GetRmax(pgd)),
+            mr_(-rmax_, rmax_),
+            mr2_(pgd_->Funcmin, pgd_->Funcmax),
 		    vertex_(VERTEXSIZE_INIT_VALUE)
     {
     }
@@ -60,19 +60,15 @@ namespace orbitaldensityrand {
 		sv.Pos = { 0.0f, 0.0f, 0.0f };
 		boost::fill(vertex_, sv);
 
-        tbb::parallel_for(
-            tbb::blocked_range<int>(0, static_cast<std::int32_t>(vertexsize_.load())),
-        [this, m, reim](auto const & range) {
-                for (auto && i = range.begin(); i != range.end(); ++i) {
-                    FillSimpleVertex(m, reim, vertex_[i]);
-                }
-            });
+        for (auto i = 0UL; i < vertexsize_.load(); i++) {
+            FillSimpleVertex(m, reim, vertex_[i]);
+        }
 
 		complete_.store(true);
 	}
 
 
-	void OrbitalDensityRand::FillSimpleVertex(std::int32_t m, OrbitalDensityRand::Re_Im_type reim, SimpleVertex & ver) const
+	void OrbitalDensityRand::FillSimpleVertex(std::int32_t m, OrbitalDensityRand::Re_Im_type reim, SimpleVertex & ver)
 	{
 		if (thread_end_) {
 			return;
@@ -82,17 +78,14 @@ namespace orbitaldensityrand {
 		auto sign = 0;
 		double x, y, z;
 
-		myrandom::MyRandSfmt mr(-rmax_, rmax_);
-		myrandom::MyRandSfmt mr2(pgd_->Funcmin, pgd_->Funcmax);
-
 		do {
 			if (thread_end_) {
 				return;
 			}
 
-			x = mr.myrand();
-			y = mr.myrand();
-			z = mr.myrand();
+			x = mr_.myrand();
+			y = mr_.myrand();
+			z = mr_.myrand();
 
 			auto const r = std::sqrt(x * x + y * y + z * z);
 			if (r < pgd_->R_meshmin()) {
@@ -112,7 +105,7 @@ namespace orbitaldensityrand {
                 }
                 
                 pp = ((*pgd_)(r) * v * v);
-				p = mr2.myrand();
+				p = mr2_.myrand();
 			}
 			break;
 
@@ -135,7 +128,7 @@ namespace orbitaldensityrand {
 				}
 
 				pp = (*pgd_)(r) * ylm;
-				p = mr2.myrand();
+				p = mr2_.myrand();
 			}
 			break;
 

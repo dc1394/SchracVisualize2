@@ -12,6 +12,7 @@
 
 #include "DXUT.h"
 #include "getdata/getdata.h"
+#include "myrandom/myrandsfmt.h"
 #include "utility/property.h"
 #include <atomic>               // for std::atomic
 #include <memory>               // for std::shared_ptr, for std::unique_ptr
@@ -94,7 +95,7 @@ namespace orbitaldensityrand {
             \param reim 実部を描画するか、虚部を描画するか
             \param ver 対象のSimpleVertex
         */
-        void FillSimpleVertex(std::int32_t m, OrbitalDensityRand::Re_Im_type reim, SimpleVertex& ver) const;
+        void FillSimpleVertex(std::int32_t m, OrbitalDensityRand::Re_Im_type reim, SimpleVertex& ver);
 
         // #endregion メンバ関数
 
@@ -184,6 +185,18 @@ namespace orbitaldensityrand {
             描画するrの最大値
         */
         double rmax_;
+
+        //! A private member variable.
+        /*!
+            乱数オブジェクトその1
+        */
+        myrandom::MyRandSfmt mr_;
+
+        //! A private member variable.
+        /*!
+            乱数オブジェクトその2
+        */
+        myrandom::MyRandSfmt mr2_;
 
         //! A private member variable.
         /*!
