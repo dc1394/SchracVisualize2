@@ -451,7 +451,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
     pd3dImmediateContext->IASetIndexBuffer(pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
     // Set primitive topology
-    pd3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+    pd3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
     // Create the constant buffers
     D3D11_BUFFER_DESC bd;
@@ -492,8 +492,6 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pd3dImmediateContext,
     double fTime, float fElapsedTime, void* pUserContext)
 {
-    //using namespace moleculardynamics;
-
     // If the settings dialog is being shown, then render it instead of rendering the app's scene
     if (settingsDlg.IsActive())
     {
