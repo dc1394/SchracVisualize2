@@ -1,5 +1,5 @@
 /*! \file getdata.h
-    \brief r???????????????????????????????
+    \brief rのメッシュと、そのメッシュにおける電子密度を与えるクラスの実装
 
     Copyright ｩ 2015-2019 @dc1394 All Rights Reserved.
     This software is released under the BSD 2-Clause License.
@@ -13,7 +13,7 @@
 #include <boost/range/algorithm.hpp>    // for boost::max_element
 
 namespace getdata {
-    // #region ???????
+    // #region コンストラクタ
 
     GetData::GetData(std::string const & filename) :
         Atomname([this] { return std::cref(atomname_); }, nullptr),
@@ -29,7 +29,7 @@ namespace getdata {
     {
         using namespace boost::algorithm;
 
-        // ??????
+        // トークン分割
         std::vector<std::string> tokenstmp, tokens;
         split(tokenstmp, filename, is_any_of("\\"), token_compress_on);
         split(tokens, tokenstmp.back(), is_any_of("_"), token_compress_on);
@@ -41,7 +41,7 @@ namespace getdata {
             rho_wf_type_ = GetData::Rho_Wf_type::WF;
         }
         else {
-            throw std::runtime_error("??????????!");
+            throw std::runtime_error("ファイル名が異常です！");
         }
 
         if (tokens[1] == "H") {
@@ -51,7 +51,7 @@ namespace getdata {
             atomname_ = "Helium";
         }
         else {
-            throw std::runtime_error("??????????!");
+            throw std::runtime_error("ファイル名が異常です！");
         }
 
         orbital_ = tokens[2][0];
@@ -84,7 +84,7 @@ namespace getdata {
             break;
 
         default:
-            throw std::runtime_error("??????????!");
+            throw std::runtime_error("ファイル名が異常です！");
             break;
         }
 
@@ -107,14 +107,14 @@ namespace getdata {
         gsl_spline_init(spline_.get(), r_mesh.data(), phi.data(), r_mesh.size());
     }
 
-    // #endregion ???????
+    // #endregion コンストラクタ
 
-    // #region ?????
+    // #region メンバ関数
 
     double GetData::operator()(double r) const
     {
         return gsl_spline_eval(spline_.get(), r, acc_.get());
     }
 
-    // #endsregion ?????
+    // #endregion メンバ関数
 }

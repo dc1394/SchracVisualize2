@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="getdata\deleter.h">
-      <Filter>getdata</Filter>
-    </ClInclude>
     <ClInclude Include="getdata\getdata.h">
       <Filter>getdata</Filter>
     </ClInclude>

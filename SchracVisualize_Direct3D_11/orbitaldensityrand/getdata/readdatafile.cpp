@@ -1,5 +1,5 @@
 /*! \file readdatafile.cpp
-    \brief ???????????????????????
+    \brief 電子密度のデータファイルを読み込むクラスの実装
 
     Copyright ｩ 2015-2019 @dc1394 All Rights Reserved.
     This software is released under the BSD 2-Clause License.
@@ -19,7 +19,7 @@ namespace getdata {
         std::array<char, BUFSIZE> buf;
         std::vector<double> r_mesh, phiorrho;
 
-        // ??????
+        // トークン分割
         std::vector<std::string> tokens;
 
         for (auto i = 0;; i++) {
@@ -30,9 +30,9 @@ namespace getdata {
 
             split(tokens, line, is_any_of(","), token_compress_on);
 
-            // ?????????????
+            // もし一文字も読めなかったら
             if (!ifs.gcount() && !i) {
-                throw std::runtime_error("???????????!");
+                throw std::runtime_error("データファイルが空です！");
             }
             else if (!ifs.gcount()) {
                 r_mesh.shrink_to_fit();
@@ -41,7 +41,7 @@ namespace getdata {
                 return std::make_pair(r_mesh, phiorrho);
             }
             else if (tokens.size() != 2) {
-                throw std::runtime_error("????????????!");
+                throw std::runtime_error("データファイルが異常です！");
             }
 
             std::size_t index1, index2;
@@ -50,7 +50,7 @@ namespace getdata {
             phiorrho.push_back(std::stod(tokens[1], &index2));
 
             if (tokens[0].size() != index1 || tokens[1].size() != index2) {
-                throw std::runtime_error("????????????!");
+                throw std::runtime_error("データファイルが異常です！");
             }
         }
     }

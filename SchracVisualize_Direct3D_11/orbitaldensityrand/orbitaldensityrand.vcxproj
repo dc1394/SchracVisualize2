@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="getdata\deleter.h" />
     <ClInclude Include="getdata\getdata.h" />
     <ClInclude Include="getdata\readdatafile.h" />
     <ClInclude Include="myrandom\myrandsfmt.h" />
