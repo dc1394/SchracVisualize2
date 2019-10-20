@@ -21,6 +21,8 @@
   <ItemGroup>
     <ClInclude Include="getdata\getdata.h" />
     <ClInclude Include="getdata\readdatafile.h" />
+    <ClInclude Include="myfunctional\functional.h" />
+    <ClInclude Include="myrandom\myrand.h" />
     <ClInclude Include="myrandom\myrandsfmt.h" />
     <ClInclude Include="orbitaldensityrand.h" />
     <ClInclude Include="SFMT-src-1.5.1\SFMT.h" />

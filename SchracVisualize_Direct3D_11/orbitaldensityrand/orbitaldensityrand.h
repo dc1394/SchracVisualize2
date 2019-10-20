@@ -12,8 +12,10 @@
 
 #include "DXUT.h"
 #include "getdata/getdata.h"
-#include "myrandom/myrandsfmt.h"
+#include "myfunctional/functional.h"
+#include "myrandom/myrand.h"
 #include "utility/property.h"
+#include <array>                // for std::array
 #include <atomic>               // for std::atomic
 #include <memory>               // for std::shared_ptr, for std::unique_ptr
 #include <thread>               // for std::thread
@@ -40,6 +42,17 @@ namespace orbitaldensityrand {
 
         //! A enumerated type
         /*!
+            Nelsonの確率力学を使うかどうかを表す列挙型
+        */
+        enum class Normal_Nelson_type {
+            // Nelsonの確率力学を使わない
+            NORMAL,
+            // Nelsonの確率力学を使う
+            NELSON
+        };
+
+        //! A enumerated type
+        /*!
             実部か虚部かを表す列挙型
         */
         enum class Re_Im_type {
@@ -58,7 +71,7 @@ namespace orbitaldensityrand {
             唯一のコンストラクタ
             \param pgd rのメッシュとデータ
         */
-        explicit OrbitalDensityRand(std::shared_ptr<getdata::GetData> const& pgd);
+        explicit OrbitalDensityRand(std::shared_ptr<getdata::GetData> const & pgd);
 
         //! A default destructor.
         /*!
@@ -74,19 +87,29 @@ namespace orbitaldensityrand {
         /*!
             再描画する
             \param m 磁気量子数
+            \param nornel ネルソンの確率力学を使用するかどうか
             \param reim 実部を描画するか、虚部を描画するか
             \return 再描画が成功したかどうか
         */
-        void operator()(std::int32_t m, OrbitalDensityRand::Re_Im_type reim);
+        void operator()(std::int32_t m, Normal_Nelson_type nornel, Re_Im_type reim);
 
     private:
         //! A private member function.
         /*!
             SimpleVertexのデータをクリアし、新しいデータを詰める
             \param m 磁気量子数
+            \param nornel ネルソンの確率力学を使用するかどうか
             \param reim 実部を描画するか、虚部を描画するか
         */
-        void ClearFillSimpleVertex(std::int32_t m, OrbitalDensityRand::Re_Im_type reim);
+        void ClearFillSimpleVertex(std::int32_t m, Normal_Nelson_type nornel, Re_Im_type reim);
+
+        //! A private member function.
+        /*!
+            SimpleVertexにデータを詰める
+            \param m 磁気量子数
+            \param ver 対象のSimpleVertex
+        */
+        void FillSimpleVertex(std::int32_t m, SimpleVertex & ver);
 
         //! A private member function.
         /*!
@@ -95,7 +118,16 @@ namespace orbitaldensityrand {
             \param reim 実部を描画するか、虚部を描画するか
             \param ver 対象のSimpleVertex
         */
-        void FillSimpleVertex(std::int32_t m, OrbitalDensityRand::Re_Im_type reim, SimpleVertex& ver);
+        void FillSimpleVertex(std::int32_t m, Re_Im_type reim, SimpleVertex & ver) const;
+
+        //! A private member function.
+        /*!
+            関数の数値微分を求める
+            \param x 微分する座標x
+            \param func 微分対象の関数
+        */
+        template <typename FUNCTYPE>
+        double Numerical_diff(double x, myfunctional::Functional<FUNCTYPE> const & func);
 
         // #endregion メンバ関数
 
@@ -148,19 +180,48 @@ namespace orbitaldensityrand {
 
         // #region メンバ変数
 
-    public:
         //! A public static member variable (constant).
         /*!
-            頂点数の初期値
+            頂点数の初期値（通常）
         */
         static std::vector<SimpleVertex>::size_type const VERTEXSIZE_INIT_VALUE = 100000;
 
+        //! A public static member variable (constant).
+        /*!
+            頂点数の初期値（ネルソンの確率力学）
+        */
+        static std::vector<SimpleVertex>::size_type const VERTEXSIZE_INIT_VALUE_FOR_NELSON = 5000000;
+
     private:
+        //! A private member variable (constant expression).
+        /*!
+            数値微分の刻み幅
+        */
+        static auto constexpr DH = 1.0E-7;
+
+        //! A private member variable (constant expression).
+        /*!
+            時間刻み
+        */
+        static auto constexpr DT = 0.01;
+
+        //! A private member variable (constant expression).
+        /*!
+            許容誤差
+        */
+        static auto constexpr EPS = 1.0E-15;
+
         //! A private member variable.
         /*!
             描画スレッドの作業が完了したかどうか
         */
         std::atomic<bool> complete_ = false;
+
+        //! A private member variable.
+        /*!
+            正規分布乱数オブジェクト
+        */
+        myrandom::MyRand mr_;
 
         //! A private member variable.
         /*!
@@ -176,6 +237,12 @@ namespace orbitaldensityrand {
 
         //! A private member variable.
         /*!
+            現在の座標
+        */
+        std::array<double, 3> q_;
+
+        //! A private member variable.
+        /*!
             再描画するかどうか
         */
         bool redraw_ = true;
@@ -185,18 +252,6 @@ namespace orbitaldensityrand {
             描画するrの最大値
         */
         double rmax_;
-
-        //! A private member variable.
-        /*!
-            乱数オブジェクトその1
-        */
-        myrandom::MyRandSfmt mr_;
-
-        //! A private member variable.
-        /*!
-            乱数オブジェクトその2
-        */
-        myrandom::MyRandSfmt mr2_;
 
         //! A private member variable.
         /*!
@@ -250,6 +305,19 @@ namespace orbitaldensityrand {
         \return rmaxの値
     */
     double GetRmax(std::shared_ptr<getdata::GetData> const& pgd);
+
+    template <typename FUNCTYPE>
+    inline double OrbitalDensityRand::Numerical_diff(double x, myfunctional::Functional<FUNCTYPE> const & func)
+    {
+        auto const term1 = func(x + 3.0 * DH) / 60.0;
+        auto const term2 = -3.0 / 20.0 * func(x + 2.0 * DH);
+        auto const term3 = 3.0 / 4.0 * func(x + DH);
+        auto const term4 = -3.0 / 4.0 * func(x - DH);
+        auto const term5 = 3.0 / 20.0 * func(x - 2.0 * DH);
+        auto const term6 = -func(x - 3.0 * DH) / 60.0;
+
+        return (term1 + term2 + term3 + term4 + term5 + term6) / DH;
+    }
 }
 
 #endif  // _ORBITALDENSITYRAND_H_

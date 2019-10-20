@@ -108,13 +108,4 @@ namespace getdata {
     }
 
     // #endregion コンストラクタ
-
-    // #region メンバ関数
-
-    double GetData::operator()(double r) const
-    {
-        return gsl_spline_eval(spline_.get(), r, acc_.get());
-    }
-
-    // #endregion メンバ関数
 }

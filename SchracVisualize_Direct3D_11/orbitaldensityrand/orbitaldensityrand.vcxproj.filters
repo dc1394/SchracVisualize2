@@ -7,11 +7,14 @@
     <Filter Include="utility">
       <UniqueIdentifier>{8dcc6f9e-dac3-49bf-a103-560660e3e2c8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="myrandsfmt">
-      <UniqueIdentifier>{5683dd95-6056-498f-80f4-58d6af22752d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="SFMT-src-1.5.1">
       <UniqueIdentifier>{acc6c61e-8b52-444a-a846-76f20aa25e9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="myrandom">
+      <UniqueIdentifier>{5683dd95-6056-498f-80f4-58d6af22752d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="myfunctional">
+      <UniqueIdentifier>{8856c843-6242-4a6e-9069-8ac2a3645560}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -28,12 +31,18 @@
       <Filter>utility</Filter>
     </ClInclude>
     <ClInclude Include="myrandom\myrandsfmt.h">
-      <Filter>myrandsfmt</Filter>
+      <Filter>myrandom</Filter>
     </ClInclude>
     <ClInclude Include="SFMT-src-1.5.1\SFMT.h">
       <Filter>SFMT-src-1.5.1</Filter>
     </ClInclude>
     <ClInclude Include="orbitaldensityrand.h" />
+    <ClInclude Include="myrandom\myrand.h">
+      <Filter>myrandom</Filter>
+    </ClInclude>
+    <ClInclude Include="myfunctional\functional.h">
+      <Filter>myfunctional</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="getdata\getdata.cpp">

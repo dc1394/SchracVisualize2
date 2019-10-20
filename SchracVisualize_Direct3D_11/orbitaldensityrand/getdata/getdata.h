@@ -47,7 +47,7 @@ namespace getdata {
             唯一のコンストラクタ
             \param filename rのメッシュと、そのメッシュにおける電子密度が記録されたデータファイル名
         */
-        GetData(std::string const& filename);
+        GetData(std::string const & filename);
 
         //! A destructor.
         /*!
@@ -66,6 +66,14 @@ namespace getdata {
             \return 関数の値
         */
         double operator()(double r) const;
+
+        //!  A public member function (const).
+        /*!
+            関数の微分の値を返す
+            \param r rの値
+            \return 関数の微分の値
+        */
+        double dphidr(double r) const;
 
         // #endregion メンバ関数
 
@@ -170,7 +178,7 @@ namespace getdata {
         /*!
             解く方程式のタイプ
         */
-        GetData::Rho_Wf_type rho_wf_type_;
+        Rho_Wf_type rho_wf_type_;
 
         //!  A private member variable.
         /*!
@@ -200,7 +208,7 @@ namespace getdata {
             コピーコンストラクタ（禁止）
             \param dummy コピー元のオブジェクト（未使用）
         */
-        GetData(GetData const& dummy) = delete;
+        GetData(GetData const & dummy) = delete;
 
         //! A public member function (deleted).
         /*!
@@ -208,10 +216,24 @@ namespace getdata {
             \param dummy コピー元のオブジェクト（未使用）
             \return コピー元のオブジェクト
         */
-        GetData& operator=(GetData const& dummy) = delete;
+        GetData& operator=(GetData const & dummy) = delete;
 
         // #endregion 禁止されたコンストラクタ・メンバ関数
     };
+
+    // #region メンバ関数
+
+    inline double GetData::operator()(double r) const
+    {
+        return gsl_spline_eval(spline_.get(), r, acc_.get());
+    }
+
+    inline double GetData::dphidr(double r) const
+    {
+        return gsl_spline_eval_deriv(spline_.get(), r, acc_.get());
+    }
+
+    // #endregion メンバ関数
 }
 
 #endif  // _GETRMESHANDRHO_H_

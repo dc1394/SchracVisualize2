@@ -20,8 +20,10 @@
 #include "orbitaldensityrand/utility/utility.h"
 #include <numeric>                                  // for std::iota
 #include <optional>                                 // for std::optional
+#include <boost/assert.hpp>                         // for boost::assert
 #include <boost/cast.hpp>                           // for boost::numeric_cast
 #include <boost/format.hpp>			                // for boost::wformat
+#include <tbb/task_scheduler_init.h>                // for tbb::task_scheduler_init
 #include <wrl.h>					                // for Microsoft::WRL::ComPtr
 
 #pragma warning( disable : 4100 )
@@ -68,6 +70,12 @@ static auto constexpr WINDOWHEIGHT = 960;
     画面サイズ（幅）
 */
 static auto constexpr WINDOWWIDTH = 1280;
+
+//! A global variable (constant).
+/*!
+    CPUのスレッド数
+*/
+static auto const cputhreads = tbb::task_scheduler_init::default_num_threads();
 
 //! A global variable.
 /*!
@@ -133,13 +141,19 @@ D3D11_BUFFER_DESC g_bd;
 /*!
     Direct3Dデバイス
 */
-ID3D11Device* g_pd3dDevice;
+ID3D11Device * g_pd3dDevice;
 
 //! A global variable.
 /*!
     manages the 3D UI
 */
 CDXUTDialog hud;
+
+//! A global variable.
+/*!
+    ネルソンの確率力学を使うかどうか
+*/
+auto nornel = OrbitalDensityRand::Normal_Nelson_type::NORMAL;
 
 //! A global variable.
 /*!
@@ -189,6 +203,7 @@ Microsoft::WRL::ComPtr<ID3D11Buffer> pVertexBuffer;
 
 //! A global variable.
 /*!
+    頂点レイアウト
 */
 Microsoft::WRL::ComPtr<ID3D11InputLayout> pVertexLayout;
 
@@ -220,16 +235,17 @@ CDXUTDialog ui;
 //--------------------------------------------------------------------------------------
 // UI control IDs
 //--------------------------------------------------------------------------------------
-#define IDC_TOGGLEFULLSCREEN    1
-#define IDC_CHANGEDEVICE        2
-#define IDC_TOGGLEROTATION      3
-#define IDC_REDRAW              4
-#define IDC_LOADNEWFILE         5
-#define IDC_COMBOBOX            6
-#define IDC_RADIOA              7
-#define IDC_RADIOB              8
-#define IDC_OUTPUT              9
-#define IDC_SLIDER				10
+static auto constexpr IDC_TOGGLEFULLSCREEN = 1;
+static auto constexpr IDC_CHANGEDEVICE     = 2;
+static auto constexpr IDC_REDRAW           = 3;
+static auto constexpr IDC_LOADNEWFILE      = 4;
+static auto constexpr IDC_COMBOBOX         = 5;
+static auto constexpr IDC_RADIOA           = 6;
+static auto constexpr IDC_RADIOB           = 7;
+static auto constexpr IDC_RADIOC           = 8;
+static auto constexpr IDC_RADIOD           = 9;
+static auto constexpr IDC_OUTPUT           = 10;
+static auto constexpr IDC_SLIDER           = 11;
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -248,13 +264,6 @@ std::wstring CreateWindowTitle();
     Initialize the app
 */
 void InitApp();
-
-//! A function.
-/*!
-    描画する
-    \param pd3dImmediateContext Direct3Dのデバイスコンテキスト
-*/
-HRESULT OnRender(ID3D11DeviceContext* pd3dImmediateContext);
 
 //! A function.
 /*!
@@ -435,17 +444,6 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 
     Redraw();
 
-    // Set vertex buffer
-    UINT const stride = sizeof(SimpleVertex);
-    auto const offset = 0U;
-    pd3dImmediateContext->IASetVertexBuffers(0, 1, pVertexBuffer.GetAddressOf(), &stride, &offset);
-
-    // Set index buffer
-    pd3dImmediateContext->IASetIndexBuffer(pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-    // Set primitive topology
-    pd3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-
     // Create the constant buffers
     D3D11_BUFFER_DESC bd;
     ZeroMemory(&bd, sizeof(bd));
@@ -528,19 +526,31 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
     // Set index buffer
     pd3dImmediateContext->IASetIndexBuffer(pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-    // Set primitive topology
-    pd3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+    switch (nornel)
+    {
+    case OrbitalDensityRand::Normal_Nelson_type::NORMAL:
+        // Set primitive topology
+        pd3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+        break;
+
+    case OrbitalDensityRand::Normal_Nelson_type::NELSON:
+        // Set primitive topology
+        pd3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+        break;
+
+    default:
+        BOOST_ASSERT(!"nornelが異常!");
+        break;
+    }
 
     //
     // Render the cube
     //
     pd3dImmediateContext->VSSetShader(pVertexShaderBox.Get(), nullptr, 0);
-    pd3dImmediateContext->VSSetConstantBuffers(0, 1, pCBChangesEveryFrame.GetAddressOf());
+    pd3dImmediateContext->VSSetConstantBuffers(1, 1, pCBChangesEveryFrame.GetAddressOf());
     pd3dImmediateContext->PSSetShader(pPixelShaderBox.Get(), nullptr, 0);
-    pd3dImmediateContext->PSSetConstantBuffers(0, 1, pCBChangesEveryFrame.GetAddressOf());
+    pd3dImmediateContext->PSSetConstantBuffers(1, 1, pCBChangesEveryFrame.GetAddressOf());
     pd3dImmediateContext->DrawIndexed(static_cast<UINT>(podr->Vertexsize), 0, 0);
-
-    OnRender(pd3dImmediateContext);
 
     hud.OnRender(fElapsedTime);
     ui.OnRender(fElapsedTime);
@@ -627,6 +637,7 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
         ReadData();
         podr.emplace(pgd);
         first = true;
+        nornel = OrbitalDensityRand::Normal_Nelson_type::NORMAL;
         ::SetWindowText(DXUTGetHWND(), CreateWindowTitle().c_str());
         hud.RemoveAllControls();
         drawdata = 1U;
@@ -646,12 +657,32 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
     }
 
     case IDC_RADIOA:
+        nornel = OrbitalDensityRand::Normal_Nelson_type::NORMAL;
+        RedrawFlagTrue();
+        podr->Vertexsize(OrbitalDensityRand::VERTEXSIZE_INIT_VALUE);
+        ::SetWindowText(DXUTGetHWND(), CreateWindowTitle().c_str());
+        hud.RemoveAllControls();
+        SetUI();
+        Redraw();
+        break;
+
+    case IDC_RADIOB:
+        nornel = OrbitalDensityRand::Normal_Nelson_type::NELSON;
+        RedrawFlagTrue();
+        podr->Vertexsize(OrbitalDensityRand::VERTEXSIZE_INIT_VALUE_FOR_NELSON);
+        ::SetWindowText(DXUTGetHWND(), CreateWindowTitle().c_str());
+        hud.RemoveAllControls();
+        SetUI();
+        Redraw();
+        break;
+
+    case IDC_RADIOC:
         reim = OrbitalDensityRand::Re_Im_type::REAL;
         RedrawFlagTrue();
         Redraw();
         break;
 
-    case IDC_RADIOB:
+    case IDC_RADIOD:
         reim = OrbitalDensityRand::Re_Im_type::IMAGINARY;
         RedrawFlagTrue();
         Redraw();
@@ -688,52 +719,38 @@ void CALLBACK OnKeyboard(UINT nChar, bool bKeyDown, bool bAltDown, void* pUserCo
     }
 }
 
-HRESULT OnRender(ID3D11DeviceContext* pd3dImmediateContext)
-{
-    auto hr = S_OK;
-
-    // Get the projection & view matrix from the camera class
-    auto const mProj = camera.GetProjMatrix();
-    auto const mView = camera.GetViewMatrix();
-    auto const mWorld = camera.GetWorldMatrix();
-
-    auto const mWorldViewProjection = mWorld * mView * mProj;
-
-    // Update constant buffer that changes once per frame
-    D3D11_MAPPED_SUBRESOURCE MappedResource;
-    V(pd3dImmediateContext->Map(pCBChangesEveryFrame.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource));
-    auto pCB = reinterpret_cast<CBChangesEveryFrame2*>(MappedResource.pData);
-    XMStoreFloat4x4(&pCB->mWorldViewProj, XMMatrixTranspose(mWorldViewProjection));
-    XMStoreFloat4x4(&pCB->mWorld, XMMatrixTranspose(mWorld));
-
-    pd3dImmediateContext->Unmap(pCBChangesEveryFrame.Get(), 0);
-
-    //
-    // Set the Vertex Layout
-    //
-    pd3dImmediateContext->IASetInputLayout(pVertexLayout.Get());
-
-    pd3dImmediateContext->VSSetConstantBuffers(0, 1, pCBNeverChanges.GetAddressOf());
-    pd3dImmediateContext->VSSetConstantBuffers(1, 1, pCBChangesEveryFrame.GetAddressOf());
-    pd3dImmediateContext->PSSetConstantBuffers(1, 1, pCBChangesEveryFrame.GetAddressOf());
-
-    return hr;
-}
-
 std::wstring CreateWindowTitle()
 {
     std::string windowtitle;
-    switch (pgd->Rho_wf_type_) {
-    case getdata::GetData::Rho_Wf_type::RHO:
-        windowtitle = "Electron density";
+    switch (nornel)
+    {
+    case OrbitalDensityRand::Normal_Nelson_type::NORMAL:
+        switch (pgd->Rho_wf_type_)
+        {
+        case getdata::GetData::Rho_Wf_type::RHO:
+            windowtitle = "Electron density";
+            break;
+
+        case getdata::GetData::Rho_Wf_type::WF:
+            windowtitle = "Wave function";
+            break;
+
+        default:
+            BOOST_ASSERT(!"pgd->Rho_wf_type_が異常!");
+            break;
+        }
+        windowtitle += " in " + pgd->Atomname() + " for " + pgd->Orbital() + " orbital";
         break;
 
-    case getdata::GetData::Rho_Wf_type::WF:
-        windowtitle = "Wave function";
+    case OrbitalDensityRand::Normal_Nelson_type::NELSON:
+        windowtitle = pgd->Atomname() + " " + pgd->Orbital();
+        break;
+
+    default:
+        BOOST_ASSERT(!"nornelが異常!");
         break;
     }
-    windowtitle += " in " + pgd->Atomname() + " for " + pgd->Orbital() + " orbital";
-
+    
     return utility::my_mbstowcs(windowtitle);
 }
 
@@ -744,22 +761,22 @@ HRESULT RenderPoint()
     auto const index = drawdata & 0x0F;
     switch (pgd->L) {
     case 0:
-        (*podr)(0, reim);
+        (*podr)(0, nornel, reim);
         break;
 
     case 1:
     {
         switch (index) {
         case 1:
-            (*podr)(1, reim);
+            (*podr)(1, nornel, reim);
             break;
 
         case 2:
-            (*podr)(-1, reim);
+            (*podr)(-1, nornel, reim);
             break;
 
         case 3:
-            (*podr)(0, reim);
+            (*podr)(0, nornel, reim);
             break;
 
         default:
@@ -773,23 +790,23 @@ HRESULT RenderPoint()
     {
         switch (index) {
         case 1:
-            (*podr)(-2, reim);
+            (*podr)(-2, nornel, reim);
             break;
 
         case 2:
-            (*podr)(-1, reim);
+            (*podr)(-1, nornel, reim);
             break;
 
         case 3:
-            (*podr)(1, reim);
+            (*podr)(1, nornel, reim);
             break;
 
         case 4:
-            (*podr)(2, reim);
+            (*podr)(2, nornel, reim);
             break;
 
         case 5:
-            (*podr)(0, reim);
+            (*podr)(0, nornel, reim);
             break;
 
         default:
@@ -803,31 +820,31 @@ HRESULT RenderPoint()
     {
         switch (index) {
         case 1:
-            (*podr)(1, reim);
+            (*podr)(1, nornel, reim);
             break;
 
         case 2:
-            (*podr)(-1, reim);
+            (*podr)(-1, nornel, reim);
             break;
 
         case 3:
-            (*podr)(2, reim);
+            (*podr)(2, nornel, reim);
             break;
 
         case 4:
-            (*podr)(-2, reim);
+            (*podr)(-2, nornel, reim);
             break;
 
         case 5:
-            (*podr)(3, reim);
+            (*podr)(3, nornel, reim);
             break;
 
         case 6:
-            (*podr)(-3, reim);
+            (*podr)(-3, nornel, reim);
             break;
 
         case 7:
-            (*podr)(0, reim);
+            (*podr)(0, nornel, reim);
             break;
 
         default:
@@ -937,6 +954,10 @@ void RenderText(double fTime)
     pTxtHelper->SetForegroundColor(Colors::Yellow);
     pTxtHelper->DrawTextLine(DXUTGetFrameStats(DXUTIsVsyncEnabled()));
     pTxtHelper->DrawTextLine(DXUTGetDeviceStats());
+    if (nornel == OrbitalDensityRand::Normal_Nelson_type::NORMAL)
+    {
+        pTxtHelper->DrawTextLine((boost::wformat(L"CPU threads: %d") % cputhreads).str().c_str());
+    }
     pTxtHelper->DrawTextLine((boost::wformat(L"Total vertices = %d") % podr->Vertexsize()).str().c_str());
     pTxtHelper->DrawTextLine((boost::wformat(L"Calculation time = %.3f(sec)") % calctime).str().c_str());
 
@@ -1016,17 +1037,33 @@ void SetUI()
             break;
         }
 
-        if (pgd->Rho_wf_type_ == getdata::GetData::Rho_Wf_type::WF) {
+        if (pgd->Rho_wf_type_ == getdata::GetData::Rho_Wf_type::WF && nornel == OrbitalDensityRand::Normal_Nelson_type::NORMAL)
+        {
             // Radio buttons
-            hud.AddRadioButton(IDC_RADIOA, 1, L"Real part", 35, iY += 34, 125, 22, true, L'1');
-            hud.AddRadioButton(IDC_RADIOB, 1, L"Imaginary part", 35, iY += 28, 125, 22, false, L'2');
+            hud.AddRadioButton(IDC_RADIOA, 1, L"Normal", 35, iY += 34, 125, 22, true, L'1');
+            hud.AddRadioButton(IDC_RADIOB, 1, L"Nelson", 35, iY += 28, 125, 22, false, L'2');
+
+            hud.AddRadioButton(IDC_RADIOC, 2, L"Real part", 35, iY += 40, 125, 22, true, L'3');
+            hud.AddRadioButton(IDC_RADIOD, 2, L"Imaginary part", 35, iY += 28, 125, 22, false, L'4');
+        }
+        else if (pgd->Rho_wf_type_ == getdata::GetData::Rho_Wf_type::WF)
+        {
+            // Radio buttons
+            hud.AddRadioButton(IDC_RADIOA, 1, L"Normal", 35, iY += 34, 125, 22, false, L'1');
+            hud.AddRadioButton(IDC_RADIOB, 1, L"Nelson", 35, iY += 28, 125, 22, true, L'2');
+        }
+        else
+        {
+            hud.AddRadioButton(IDC_RADIOC, 1, L"Real part", 35, iY += 40, 125, 22, true, L'1');
+            hud.AddRadioButton(IDC_RADIOD, 1, L"Imaginary part", 35, iY += 28, 125, 22, false, L'2');
         }
     }
 
     // 角度の調整
     hud.AddStatic(IDC_OUTPUT, L"Vertex size", 20, iY += 34, 125, 22);
     hud.GetStatic(IDC_OUTPUT)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
-    hud.AddSlider(IDC_SLIDER, 35, iY += 24, 125, 22, 0, 1000000, OrbitalDensityRand::VERTEXSIZE_INIT_VALUE);
+    auto const max = nornel == OrbitalDensityRand::Normal_Nelson_type::NORMAL ? 1000000 : 10000000;
+    hud.AddSlider(IDC_SLIDER, 35, iY += 24, 125, 22, 0, max, podr->Vertexsize);
 
     ui.SetCallback(OnGUIEvent);
 }

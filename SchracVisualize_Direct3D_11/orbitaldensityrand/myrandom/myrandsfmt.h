@@ -32,7 +32,7 @@ namespace myrandom {
             \param min 乱数分布の最小値
             \param max 乱数分布の最大値
         */
-        inline MyRandSfmt(double min, double max);
+        MyRandSfmt(double min, double max);
 
         //! A destructor.
         /*!
@@ -96,7 +96,7 @@ namespace myrandom {
             コピーコンストラクタ（禁止）
             \param dummy コピー元のオブジェクト（未使用）
         */
-        MyRandSfmt(const MyRandSfmt& dummy) = delete;
+        MyRandSfmt(MyRandSfmt const & dummy) = delete;
 
         //! A public member function (deleted).
         /*!
@@ -104,14 +104,14 @@ namespace myrandom {
             \param dummy コピー元のオブジェクト（未使用）
             \return コピー元のオブジェクト
         */
-        MyRandSfmt& operator=(const MyRandSfmt& dummy) = delete;
+        MyRandSfmt& operator=(MyRandSfmt const & dummy) = delete;
 
         // #endregion 禁止されたコンストラクタ・メンバ関数
     };
 
-    MyRandSfmt::MyRandSfmt(double min, double max)
+    inline MyRandSfmt::MyRandSfmt(double min, double max)
         : max_(max),
-        min_(min)
+          min_(min)
     {
         // ランダムデバイス
         std::random_device rnd;
