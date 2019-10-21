@@ -18,6 +18,7 @@
 #include "SDKmisc.h"
 #include "orbitaldensityrand/orbitaldensityrand.h"
 #include "orbitaldensityrand/utility/utility.h"
+#include <cstdint>                                  // for std::int32_t
 #include <numeric>                                  // for std::iota
 #include <optional>                                 // for std::optional
 #include <boost/assert.hpp>                         // for boost::assert
@@ -1063,7 +1064,7 @@ void SetUI()
     hud.AddStatic(IDC_OUTPUT, L"Vertex size", 20, iY += 34, 125, 22);
     hud.GetStatic(IDC_OUTPUT)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
     auto const max = nornel == OrbitalDensityRand::Normal_Nelson_type::NORMAL ? 1000000 : 10000000;
-    hud.AddSlider(IDC_SLIDER, 35, iY += 24, 125, 22, 0, max, podr->Vertexsize);
+    hud.AddSlider(IDC_SLIDER, 35, iY += 24, 125, 22, 0, max, static_cast<std::int32_t>(podr->Vertexsize));
 
     ui.SetCallback(OnGUIEvent);
 }

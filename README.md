@@ -12,6 +12,7 @@
 
 ★更新履歴
 　2019/6/22    ver.0.1　公開。
+　2019/10/21   ver.0.2　Nelsonの確率力学に対応。
 
 ★ライセンス
 　このソフトはフリーソフトウェアです（2条項BSDライセンス）。
@@ -118,6 +119,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   SchracVisualize_Direct3D_11にはIntel CorporationによるIntel® Threading 
   Building Blocks (Intel® TBB)を使用しています。
   こちらのライセンスは GNU General Public License, version 2 になります。
+
+　SchracVisualize_Direct3D_11にはGNU ProjectによるGNU Scientific Libraryを使用し
+　ています。こちらのライセンスは GNU General Public License になります。
 
   SchracVisualize_Direct3D_11には松本眞教授と斎藤睦夫さんによるSIMD-oriented
   Fast Mersenne Twister (SFMT)を使用しています。こちらのライセンスは修正BSDライ
