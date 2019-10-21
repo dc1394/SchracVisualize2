@@ -67,7 +67,7 @@ namespace utility {
         */
         void operator()(T* p) {
             if (p) {
-               delete p;
+                delete p;
                 p = nullptr;
             }
         }

@@ -1,6 +1,8 @@
 ﻿/*! \file orbitaldensityrand.cpp
     \brief OrbitalDensityRandクラスの実装
+
     Copyright © 2019 @dc1394 All Rights Reserved.
+    (but this is originally adapted by サンマヤ for TDXHydrogenScene.cpp from http://sammaya.garyoutensei.com/math_phys/phys_sym/monte_hydrogen.html )
     This software is released under the BSD 2-Clause License.
 */
 
