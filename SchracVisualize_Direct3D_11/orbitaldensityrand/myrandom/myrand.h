@@ -11,7 +11,7 @@
 #pragma once
 
 #include <cmath>    // for std::sqrt
-#include <random>   // for std::default_random_engine, std::normal_distribution, std::random_device, 
+#include <random>   // for std::default_random_engine, std::normal_distribution, std::random_device
 
 namespace myrandom {
     //! A template class.
@@ -57,12 +57,6 @@ namespace myrandom {
     private:
         //! A private member variable.
         /*!
-            ランダムデバイス
-        */
-        std::random_device rnd_;
-
-        //! A private member variable.
-        /*!
             乱数エンジン
         */
         std::default_random_engine randengine_;
@@ -100,9 +94,12 @@ namespace myrandom {
     };
 
     inline MyRand::MyRand(double mean, double variance)
-        : randengine_(rnd_()),
-          distribution_(mean, std::sqrt(variance))
+        :   distribution_(mean, std::sqrt(variance))
     {
+        // ランダムデバイス
+        std::random_device rnd;
+
+        randengine_ = std::default_random_engine(rnd());
     }
 
 

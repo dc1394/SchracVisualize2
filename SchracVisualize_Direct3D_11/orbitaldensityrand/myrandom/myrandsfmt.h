@@ -11,11 +11,7 @@
 #pragma once
 
 #include "../SFMT-src-1.5.1/SFMT.h"
-#include <cstdint>						// for std::uint32_t, std::uint_least32_t
-#include <functional>					// for std::ref
 #include <random>						// for std::random_device
-#include <vector>						// for std::vector
-#include <boost/range/algorithm.hpp>    // for boost::generate
 
 namespace myrandom {
     //! A class.
@@ -58,12 +54,6 @@ namespace myrandom {
         // #region メンバ変数
 
     private:
-        //! A private static member variable (constant expression).
-        /*!
-            初期乱数生成用のstd::vectorのサイズ
-        */
-        static std::vector<std::uint_least32_t>::size_type const SIZE = 1;
-
         //! A private member variable (constant).
         /*!
             乱数分布の最大値
@@ -116,15 +106,8 @@ namespace myrandom {
         // ランダムデバイス
         std::random_device rnd;
 
-        // 初期化用ベクタ
-        std::vector<std::uint_least32_t> v(SIZE);
-
-        // ベクタの初期化
-        // 非決定的な乱数でシード列を構築する
-        boost::generate(v, std::ref(rnd));
-
         // 乱数エンジン
-        sfmt_init_gen_rand(&sfmt_, v[0]);
+        sfmt_init_gen_rand(&sfmt_, rnd());
     }
 }
 
