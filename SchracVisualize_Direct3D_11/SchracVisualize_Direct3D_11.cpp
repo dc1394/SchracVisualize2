@@ -24,7 +24,6 @@
 #include <boost/assert.hpp>                         // for boost::assert
 #include <boost/cast.hpp>                           // for boost::numeric_cast
 #include <boost/format.hpp>			                // for boost::wformat
-#include <tbb/task_scheduler_init.h>                // for tbb::task_scheduler_init
 #include <wrl.h>					                // for Microsoft::WRL::ComPtr
 
 #pragma warning( disable : 4100 )
@@ -71,12 +70,6 @@ static auto constexpr WINDOWHEIGHT = 960;
     画面サイズ（幅）
 */
 static auto constexpr WINDOWWIDTH = 1280;
-
-//! A global variable (constant).
-/*!
-    CPUのスレッド数
-*/
-static auto const cputhreads = tbb::task_scheduler_init::default_num_threads();
 
 //! A global variable.
 /*!
@@ -955,10 +948,6 @@ void RenderText(double fTime)
     pTxtHelper->SetForegroundColor(Colors::Yellow);
     pTxtHelper->DrawTextLine(DXUTGetFrameStats(DXUTIsVsyncEnabled()));
     pTxtHelper->DrawTextLine(DXUTGetDeviceStats());
-    if (nornel == OrbitalDensityRand::Normal_Nelson_type::NORMAL)
-    {
-        pTxtHelper->DrawTextLine((boost::wformat(L"CPU threads: %d") % cputhreads).str().c_str());
-    }
     pTxtHelper->DrawTextLine((boost::wformat(L"Total vertices = %d") % podr->Vertexsize()).str().c_str());
     pTxtHelper->DrawTextLine((boost::wformat(L"Calculation time = %.3f(sec)") % calctime).str().c_str());
 
@@ -1063,7 +1052,7 @@ void SetUI()
     // 角度の調整
     hud.AddStatic(IDC_OUTPUT, L"Vertex size", 20, iY += 34, 125, 22);
     hud.GetStatic(IDC_OUTPUT)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
-    auto const max = nornel == OrbitalDensityRand::Normal_Nelson_type::NORMAL ? 1000000 : 10000000;
+    auto const max = nornel == OrbitalDensityRand::Normal_Nelson_type::NORMAL ? 5000000 : 10000000;
     hud.AddSlider(IDC_SLIDER, 35, iY += 24, 125, 22, 0, max, static_cast<std::int32_t>(podr->Vertexsize));
 
     ui.SetCallback(OnGUIEvent);

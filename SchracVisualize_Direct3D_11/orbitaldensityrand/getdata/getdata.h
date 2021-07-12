@@ -85,18 +85,6 @@ namespace getdata {
         */
         Property<std::string const&> Atomname;
 
-        //! A property.
-        /*!
-            関数の最大値のプロパティ
-        */
-        Property<double> const Funcmax;
-
-        //! A property.
-        /*!
-            関数の最小値のプロパティ
-        */
-        Property<double> const Funcmin;
-
         //!  A property.
         /*!
             方位量子数へのプロパティ
@@ -114,6 +102,18 @@ namespace getdata {
             軌道へのプロパティ
         */
         Property<std::string> const Orbital;
+
+        //! A property.
+        /*!
+            波動関数の最大値のプロパティ
+        */
+        Property<double> const Phimax;
+
+        //! A property.
+        /*!
+            波動関数が最大値を取るときのrへのプロパティ
+        */
+        Property<double> const R2rhomaxr;
 
         //!  A private member variable.
         /*!
@@ -144,17 +144,6 @@ namespace getdata {
         */
         std::string atomname_;
 
-        //!  A private member variable.
-        /*!
-            関数の最大値
-        */
-        double funcmax_;
-
-        //!  A private member variable.
-        /*!
-            関数の最小値
-        */
-        double funcmin_;
 
         //!  A private member variable.
         /*!
@@ -176,6 +165,24 @@ namespace getdata {
 
         //!  A private member variable.
         /*!
+            波動関数φ
+        */
+        std::vector<double> phi_;
+
+        //!  A private member variable.
+        /*!
+            波動関数の最大値
+        */
+        double phimax_;
+
+        //!  A private member variable.
+        /*!
+            波動関数が最大値を取るときのr
+        */
+        double r2rhomaxr_;
+
+        //!  A private member variable.
+        /*!
             解く方程式のタイプ
         */
         Rho_Wf_type rho_wf_type_;
@@ -186,6 +193,12 @@ namespace getdata {
         */
         double r_meshmin_;
 
+        //!  A private member variable.
+        /*!
+           rのメッシュ
+        */
+        std::vector<double> r_mesh_;
+
         //! A private member variable.
         /*!
             gsl_interp_typeへのスマートポインタ
@@ -195,8 +208,8 @@ namespace getdata {
         // #endregion メンバ変数
 
         // #region 禁止されたコンストラクタ・メンバ関数
-
     public:
+
         //! A public constructor (deleted).
         /*!
             デフォルトコンストラクタ（禁止）

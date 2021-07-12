@@ -1,7 +1,7 @@
 ﻿/*! \file myrandsfmt.h
     \brief SFMTを使った自作乱数クラスの宣言
 
-    Copyright © 2017 @dc1394 All Rights Reserved.
+    Copyright © 2017-2021 @dc1394 All Rights Reserved.
     This software is released under the BSD 2-Clause License.
 */
 
@@ -11,7 +11,10 @@
 #pragma once
 
 #include "../SFMT-src-1.5.1/SFMT.h"
-#include <random>						// for std::random_device
+#include <cmath>                                // for std::sqrt, std::log, std::cos, std::sin
+#include <optional>                             // for std::optional
+#include <random>						        // for std::random_device
+#include <boost/math/constants/constants.hpp>   // for boost::math::constants::pi
 
 namespace myrandom {
     //! A class.
@@ -24,11 +27,9 @@ namespace myrandom {
     public:
         //! A constructor.
         /*!
-            唯一のコンストラクタ
-            \param min 乱数分布の最小値
-            \param max 乱数分布の最大値
+            デフォルトコンストラクタ
         */
-        MyRandSfmt(double min, double max);
+        MyRandSfmt();
 
         //! A destructor.
         /*!
@@ -42,11 +43,33 @@ namespace myrandom {
 
         //!  A public member function.
         /*!
-            [min, max]の閉区間で一様乱数を生成する
+            [0.0, 1.0]の閉区間で一様乱数を生成する
+            \return [0.0, 1.0]の閉区間における一様乱数
         */
         double myrand()
         {
-            return sfmt_genrand_real1(&sfmt_) * (max_ - min_) + min_;
+            return sfmt_genrand_real1(&sfmt_);
+        }
+
+        //!  A public member function.
+        /*!
+            平均mu、分散sigma^2の正規乱数を生成する
+            \param mu 正規乱数の平均
+            \param sigma2 正規乱数の分散
+            \return 平均mu、分散sigma^2の正規乱数
+        */
+        double normal_distribution_rand(double mu, double sigma2);
+
+        //!  A public member function.
+        /*!
+            [min, max]の閉区間で一様乱数を生成する
+            \param min 乱数分布の最小値
+            \param max 乱数分布の最大値
+            \return [min, max]の閉区間における一様乱数
+        */
+        double myrand(double min, double max)
+        {
+            return sfmt_genrand_real1(&sfmt_) * (max - min) + min;
         }
 
         // #endregion メンバ関数
@@ -54,18 +77,12 @@ namespace myrandom {
         // #region メンバ変数
 
     private:
-        //! A private member variable (constant).
+        //! A private member variable.
         /*!
-            乱数分布の最大値
+            生成された乱数
         */
-        double const max_;
-
-        //! A private member variable (constant).
-        /*!
-            乱数分布の最小値
-        */
-        double const min_;
-
+        std::optional<double> normal_dist_rand_ = std::nullopt;
+                
         //! A private member variable.
         /*!
             乱数エンジン
@@ -75,12 +92,6 @@ namespace myrandom {
         // #region 禁止されたコンストラクタ・メンバ関数
 
     public:
-        //! A public constructor (deleted).
-        /*!
-            デフォルトコンストラクタ（禁止）
-        */
-        MyRandSfmt() = delete;
-
         //! A public copy constructor (deleted).
         /*!
             コピーコンストラクタ（禁止）
@@ -99,9 +110,7 @@ namespace myrandom {
         // #endregion 禁止されたコンストラクタ・メンバ関数
     };
 
-    inline MyRandSfmt::MyRandSfmt(double min, double max)
-        : max_(max),
-          min_(min)
+    inline MyRandSfmt::MyRandSfmt()
     {
         // ランダムデバイス
         std::random_device rnd;

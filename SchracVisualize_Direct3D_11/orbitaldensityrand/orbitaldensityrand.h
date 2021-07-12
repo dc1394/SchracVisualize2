@@ -107,18 +107,16 @@ namespace orbitaldensityrand {
         /*!
             SimpleVertexにデータを詰める
             \param m 磁気量子数
-            \param ver 対象のSimpleVertex
         */
-        void FillSimpleVertex(std::int32_t m, SimpleVertex & ver);
+        void FillSimpleVertex(std::int32_t m);
 
         //! A private member function.
         /*!
             SimpleVertexにデータを詰める
             \param m 磁気量子数
             \param reim 実部を描画するか、虚部を描画するか
-            \param ver 対象のSimpleVertex
         */
-        void FillSimpleVertex(std::int32_t m, Re_Im_type reim, SimpleVertex & ver) const;
+        void FillSimpleVertex(std::int32_t m, Re_Im_type reim, std::int32_t starti, std::int32_t endi);
 
         //! A private member function.
         /*!
@@ -184,7 +182,7 @@ namespace orbitaldensityrand {
         /*!
             頂点数の初期値（通常）
         */
-        static std::vector<SimpleVertex>::size_type const VERTEXSIZE_INIT_VALUE = 100000;
+        static std::vector<SimpleVertex>::size_type const VERTEXSIZE_INIT_VALUE = 1000000;
 
         //! A public static member variable (constant).
         /*!

@@ -9,10 +9,10 @@
 #include "myrandom/myrandsfmt.h"
 #include "orbitaldensityrand.h"
 #include "utility/utility.h"
+#include <random>                                               // for std::random_device, std::default_random_engine, std::normal_distribution
 #include <boost/assert.hpp>                                     // for boost::assert
 #include <boost/math/special_functions/spherical_harmonic.hpp>  // for boost::math::spherical_harmonic
 #include <boost/range/algorithm.hpp>                            // for boost::fill
-#include <tbb/parallel_for.h>                                   // for tbb::parallel_for
 
 namespace orbitaldensityrand {
 	OrbitalDensityRand::OrbitalDensityRand(std::shared_ptr<getdata::GetData> const & pgd)
@@ -68,19 +68,24 @@ namespace orbitaldensityrand {
         switch (nornel)
         {
         case Normal_Nelson_type::NORMAL:
-            tbb::parallel_for(
-                tbb::blocked_range<int>(0, static_cast<std::int32_t>(vertexsize_.load())),
-                [this, m, reim](auto const & range) {
-                    for (auto && i = range.begin(); i != range.end(); ++i) {
-                        FillSimpleVertex(m, reim, vertex_[i]);
-                    }
-                });
+            {
+                auto const threads = static_cast<std::int32_t>(std::thread::hardware_concurrency());
+                auto const num = static_cast<std::int32_t>(vertexsize_.load() / threads);
+
+                auto thvec = std::vector<std::thread>(threads);
+                for (auto i = 0; i < threads - 1; i++) {
+                    thvec[i] = std::thread([i, m, num, reim, this]() { FillSimpleVertex(m, reim, num * i, num * (i + 1)); });
+                }
+                thvec[threads - 1] = std::thread([m, num, reim, threads, this]() { FillSimpleVertex(m, reim, num * (threads - 1), static_cast<std::int32_t>(vertexsize_.load())); });
+
+                for (auto && th : thvec) {
+                    th.join();
+                }
+            }
             break;
 
         case Normal_Nelson_type::NELSON:
-            for (auto i = 0UL; i < vertexsize_.load(); i++) {
-                FillSimpleVertex(m, vertex_[i]);
-            }
+            FillSimpleVertex(m);
             break;
 
         default:
@@ -91,168 +96,232 @@ namespace orbitaldensityrand {
 		complete_.store(true);
 	}
 
-    void OrbitalDensityRand::FillSimpleVertex(std::int32_t m, SimpleVertex& ver)
+    void OrbitalDensityRand::FillSimpleVertex(std::int32_t m)
     {
         using namespace boost::math;
         using namespace constants;
 
-        if (thread_end_) {
-            return;
+        for (auto i = 0UL; i < vertexsize_.load(); i++) {
+            if (thread_end_) {
+                return;
+            }
+
+            auto const r = std::hypot(q_[0], q_[1], q_[2]);
+
+            auto const theta1 = std::acos(q_[2] / r);
+            auto const theta2 = std::atan(std::hypot(q_[0], q_[1]) / q_[2]);
+            auto const theta = (theta1 < 0.0 && theta2 < 0.0) ? 2.0 * pi<double>() - theta1 : theta1;
+
+            auto phi = std::atan(q_[1] / q_[0]);
+
+            auto const t1 = std::sin(theta) * std::cos(phi);
+            if (q_[0] * t1 < 0.0)
+            {
+                phi = pi<double>() - phi;
+            }
+
+            auto const ylm = spherical_harmonic_r(pgd_->L, m, theta, phi);
+            auto const dylmdtheta = Numerical_diff(
+                theta,
+                myfunctional::make_functional([this, m, phi](double th) { return spherical_harmonic_r(pgd_->L, m, th, phi); }));
+            auto const dylmdphi = Numerical_diff(
+                phi,
+                myfunctional::make_functional([this, m, theta](double ph) { return spherical_harmonic_r(pgd_->L, m, theta, ph); }));
+
+            auto x = std::sin(theta) * std::cos(phi) * pgd_->dphidr(r) / (*pgd_)(r);
+            x += std::cos(theta) * std::cos(phi) / r * dylmdtheta / ylm;
+            x -= std::sin(phi) / (r * std::sin(theta)) * dylmdphi / ylm;
+
+            auto const t2 = std::sin(theta) * std::sin(phi);
+            if (q_[1] * t2 < 0.0)
+            {
+                phi = pi<double>() + phi;
+            }
+
+            auto y = std::sin(theta) * std::sin(phi) * pgd_->dphidr(r) / (*pgd_)(r);
+            y += std::cos(theta) * std::sin(phi) / r * dylmdtheta / ylm;
+            y += std::cos(phi) / (r * std::sin(theta)) * dylmdphi / ylm;
+
+            auto z = std::cos(theta) * pgd_->dphidr(r) / (*pgd_)(r);
+            z -= std::sin(theta) / r * dylmdtheta / ylm;
+
+            q_[0] += x * DT + mr_.myrand() * std::sqrt(DT);
+            q_[1] += y * DT + mr_.myrand() * std::sqrt(DT);
+            q_[2] += z * DT + mr_.myrand() * std::sqrt(DT);
+
+            vertex_[i].Pos.x = static_cast<float>(q_[0]);
+            vertex_[i].Pos.y = static_cast<float>(q_[1]);
+            vertex_[i].Pos.z = static_cast<float>(q_[2]);
+
+            vertex_[i].Color.x = 0.8f;
+            vertex_[i].Color.y = 0.0f;
+            vertex_[i].Color.z = 0.8f;
+            vertex_[i].Color.w = 1.0f;
         }
-
-        auto const r = std::hypot(q_[0], q_[1], q_[2]);
-
-	    auto const theta1 = std::acos(q_[2] / r);
-        auto const theta2 = std::atan(std::hypot(q_[0], q_[1]) / q_[2]);
-        auto const theta = (theta1 < 0.0 && theta2 < 0.0) ? 2.0 * pi<double>() - theta1 : theta1;
-
-        auto phi = std::atan(q_[1] / q_[0]);
-
-        auto const t1 = std::sin(theta) * std::cos(phi);
-        if (q_[0] * t1 < 0.0)
-        {
-            phi = pi<double>() - phi;
-        }
-
-        auto const ylm = spherical_harmonic_r(pgd_->L, m, theta, phi);
-        auto const dylmdtheta = Numerical_diff(
-            theta,
-            myfunctional::make_functional([this, m, phi](double th) { return spherical_harmonic_r(pgd_->L, m, th, phi); }));
-        auto const dylmdphi = Numerical_diff(
-            phi,
-            myfunctional::make_functional([this, m, theta](double ph) { return spherical_harmonic_r(pgd_->L, m, theta, ph); }));
-
-        auto x = std::sin(theta) * std::cos(phi) * pgd_->dphidr(r) / (*pgd_)(r);
-        x += std::cos(theta) * std::cos(phi) / r * dylmdtheta / ylm;
-        x -= std::sin(phi) / (r * std::sin(theta)) * dylmdphi / ylm;
-
-        auto const t2 = std::sin(theta) * std::sin(phi);
-        if (q_[1] * t2 < 0.0)
-        {
-            phi = pi<double>() + phi;
-        }
-
-        auto y = std::sin(theta) * std::sin(phi) * pgd_->dphidr(r) / (*pgd_)(r);
-        y += std::cos(theta) * std::sin(phi) / r * dylmdtheta / ylm;
-        y += std::cos(phi) / (r * std::sin(theta)) * dylmdphi / ylm;
-
-        auto z = std::cos(theta) * pgd_->dphidr(r) / (*pgd_)(r);
-        z -= std::sin(theta) / r * dylmdtheta / ylm;
-
-        q_[0] += x * DT + mr_.myrand() * std::sqrt(DT);
-        q_[1] += y * DT + mr_.myrand() * std::sqrt(DT);
-        q_[2] += z * DT + mr_.myrand() * std::sqrt(DT);
-
-        ver.Pos.x = static_cast<float>(q_[0]);
-        ver.Pos.y = static_cast<float>(q_[1]);
-        ver.Pos.z = static_cast<float>(q_[2]);
-
-        ver.Color.x = 0.8f;
-        ver.Color.y = 0.0f;
-        ver.Color.z = 0.8f;
-        ver.Color.w = 1.0f;
     }
 
-	void OrbitalDensityRand::FillSimpleVertex(std::int32_t m, Re_Im_type reim, SimpleVertex & ver) const
+	void OrbitalDensityRand::FillSimpleVertex(std::int32_t m, Re_Im_type reim, std::int32_t starti, std::int32_t endi)
 	{
 		if (thread_end_) {
 			return;
 		}
 
-		auto pp = 0.0, p = 0.0;
-		auto sign = 0;
-		double x, y, z;
+        if (!m && pgd_->Rho_wf_type_ == getdata::GetData::Rho_Wf_type::WF && reim == Re_Im_type::IMAGINARY) {
+            return;
+        }
 
-	    myrandom::MyRandSfmt mr(-rmax_, rmax_);
-        myrandom::MyRandSfmt mr2(pgd_->Funcmin, pgd_->Funcmax);
+		auto sign = 1;
+		auto x = 0.0;
+        auto y = 0.0;
+        auto z = 0.0;
 
-		do {
-			if (thread_end_) {
-				return;
-			}
-
-			x = mr.myrand();
-			y = mr.myrand();
-			z = mr.myrand();
-
-			auto const r = std::sqrt(x * x + y * y + z * z);
-			if (r < pgd_->R_meshmin()) {
-				continue;
-			}
-
-			switch (pgd_->Rho_wf_type_) {
-			case getdata::GetData::Rho_Wf_type::RHO:
-			{
-				auto const phi = std::acos(x / std::sqrt(x * x + y * y));
-                double v;
-                if (m >= 0) {
-                    v = boost::math::spherical_harmonic_r(pgd_->L, m, std::acos(z / r), phi);
-                }
-                else {
-                    v = boost::math::spherical_harmonic_i(pgd_->L, m, std::acos(z / r), phi);
-                }
+        myrandom::MyRandSfmt mr;
                 
-                pp = ((*pgd_)(r) * v * v);
-				p = mr2.myrand();
-			}
-			break;
+        auto nextflag = false;
+        auto cnt = 0;
 
-			case getdata::GetData::Rho_Wf_type::WF:
-			{
-				auto const phi = std::acos(x / std::sqrt(x * x + y * y));
-				double ylm = 0.0;
-				switch (reim) {
-				case Re_Im_type::REAL:
-					ylm = boost::math::spherical_harmonic_r(pgd_->L, m, std::acos(z / r), phi);
-					break;
+        do {
+            if (thread_end_) {
+                return;
+            }
 
-				case Re_Im_type::IMAGINARY:
-					ylm = boost::math::spherical_harmonic_i(pgd_->L, m, std::acos(z / r), phi);
-					break;
+            switch (pgd_->Rho_wf_type_) {
+            case getdata::GetData::Rho_Wf_type::RHO:
+            {
+                auto rho = [this, m, nextflag](auto x, auto y, auto z) mutable
+                {
+                    auto const r = std::sqrt(x * x + y * y + z * z);
+                    if (r < pgd_->R_meshmin()) {
+                        nextflag = true;
+                        return 0.0;
+                    }
+                    auto const phi = std::acos(x / std::sqrt(x * x + y * y));
+                    double v;
+                    if (m >= 0) {
+                        v = boost::math::spherical_harmonic_r(pgd_->L, m, std::acos(z / r), phi);
+                    }
+                    else {
+                        v = boost::math::spherical_harmonic_i(pgd_->L, m, std::acos(z / r), phi);
+                    }
 
-				default:
-                    BOOST_ASSERT(!"何かがおかしい!");
-					break;
-				}
+                    return ((*pgd_)(r) * v * v);
+                };
+                
+                auto const maxr = pgd_->R2rhomaxr();
 
-				pp = (*pgd_)(r) * ylm;
-				p = mr2.myrand();
-			}
-			break;
+                auto const x_star = mr.normal_distribution_rand(x, maxr);
+                auto const y_star = mr.normal_distribution_rand(y, maxr);
+                auto const z_star = mr.normal_distribution_rand(z, maxr);
 
-			default:
+                auto const rho_t = rho(x, y, z);    // xの電子密度
+                if (nextflag) {
+                    x = x_star;
+                    y = y_star;
+                    z = z_star;
+                    nextflag = false;
+                    continue;
+                }
+
+                auto const rho_star = rho(x_star, y_star, z_star);  // x* の電子密度
+
+                // 採択率を計算  α = p(x*) / p(x_t)
+                auto const alpha = rho_star / rho_t;
+
+                //採択率により決定
+                auto const ar = mr.myrand();    // 0 <= ar <= 1 の一様乱数 ar を生成
+                if (ar <= alpha) {              // 採択
+                    x = x_star;
+                    y = y_star;
+                    z = z_star;
+                }
+                else {                          // 採択しない
+                    continue;
+                }                
+            }
+            break;
+
+            case getdata::GetData::Rho_Wf_type::WF:
+            {
+                auto phi = [this, m, nextflag, reim](auto x, auto y, auto z) mutable
+                {
+                    auto const r = std::sqrt(x * x + y * y + z * z);
+                    if (r < pgd_->R_meshmin()) {
+                        nextflag = true;
+                        return 0.0;
+                    }
+                    auto const phi = std::acos(x / std::sqrt(x * x + y * y));
+                    double ylm = 0.0;
+                    switch (reim) {
+                    case Re_Im_type::REAL:
+                        ylm = boost::math::spherical_harmonic_r(pgd_->L, m, std::acos(z / r), phi);
+                        break;
+
+                    case Re_Im_type::IMAGINARY:
+                        ylm = boost::math::spherical_harmonic_i(pgd_->L, m, std::acos(z / r), phi);
+                        break;
+
+                    default:
+                        BOOST_ASSERT(!"何かがおかしい!");
+                        break;
+                    }
+
+                    return (*pgd_)(r) * ylm;
+                };
+
+                auto const maxr = pgd_->R2rhomaxr();
+
+                auto const x_star = mr.normal_distribution_rand(x, maxr);
+                auto const y_star = mr.normal_distribution_rand(y, maxr);
+                auto const z_star = mr.normal_distribution_rand(z, maxr);
+
+                auto const phi_t = phi(x, y, z);    // xの波動関数
+                if (nextflag) {
+                    x = x_star;
+                    y = y_star;
+                    z = z_star;
+                    nextflag = false;
+                    continue;
+                }
+
+                auto const phi_star = phi(x_star, y_star, z_star);  // x* の波動関数
+
+                // 採択率を計算  α = p(x*) / p(x_t)
+                auto const alpha = (phi_star * phi_star) / (phi_t * phi_t);
+
+                //採択率により決定
+                auto const ar = mr.myrand();    // 0 <= ar <= 1 の一様乱数 ar を生成
+                if (ar <= alpha) {              // 採択
+                    x = x_star;
+                    y = y_star;
+                    z = z_star;
+                    if (phi_star >= 0.0) {
+                        sign = 1;
+                    }
+                    else {
+                        sign = -1;
+                    }
+                }
+                else {                          // 採択しない
+                    continue;
+                }
+            }
+            break;
+
+            default:
                 BOOST_ASSERT(!"何かがおかしい!");
-				break;
-			}
+                break;
+            }
 
-			switch (pgd_->Rho_wf_type_) {
-			case getdata::GetData::Rho_Wf_type::RHO:
-				sign = 1;
-				break;
+            vertex_[starti + cnt].Pos.x = static_cast<float>(x);
+            vertex_[starti + cnt].Pos.y = static_cast<float>(y);
+            vertex_[starti + cnt].Pos.z = static_cast<float>(z);
 
-			case getdata::GetData::Rho_Wf_type::WF:
-				sign = (pp > 0.0) - (pp < 0.0);
-				break;
-
-			default:
-                BOOST_ASSERT(!"何かがおかしい!");
-				break;
-			}
-
-			if (!m && pgd_->Rho_wf_type_ == getdata::GetData::Rho_Wf_type::WF && reim == Re_Im_type::IMAGINARY) {
-				break;
-			}
-			
-		} while (std::fabs(pp) < std::fabs(p));
-
-		ver.Pos.x = static_cast<float>(x);
-		ver.Pos.y = static_cast<float>(y);
-		ver.Pos.z = static_cast<float>(z);
-
-		ver.Color.x = sign > 0 ? 0.8f : 0.0f;
-		ver.Color.y = sign < 0 ? 0.8f : 0.0f;
-		ver.Color.z = 0.8f;
-		ver.Color.w = 1.0f;
+            vertex_[starti + cnt].Color.x = sign > 0 ? 0.8f : 0.0f;
+            vertex_[starti + cnt].Color.y = sign < 0 ? 0.8f : 0.0f;
+            vertex_[starti + cnt].Color.z = 0.8f;
+            vertex_[starti + cnt].Color.w = 1.0f;
+            cnt++;
+		} while (cnt < (endi - starti));
 	}
 
 	double GetRmax(std::shared_ptr<getdata::GetData> const & pgd)

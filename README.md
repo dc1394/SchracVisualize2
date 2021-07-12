@@ -8,17 +8,18 @@
 　ルドには、以下のライブラリが必要です。
 　・Boost C++ Libraries
 　・GNU Scientific Library (GSL)
-　・Intel® Threading Building Blocks (Intel® TBB)
 
 ★更新履歴
-　2019/6/22    ver.0.1　公開。
-　2019/10/21   ver.0.2　Nelsonの確率力学に対応。
+　2019/6/22  ver.0.1　公開。
+　2019/10/21 ver.0.2　Nelsonの確率力学に対応。
+　2021/7/12  ver.0.3　棄却サンプリング法からメトロポリス・ヘイスティングス法に変
+　　　　　　　　　　　更。
 
 ★ライセンス
 　このソフトはフリーソフトウェアです（2条項BSDライセンス）。
 --------------------------------------------------------------------------------
 　SchracVisualize_Direct3D_11
-　Copyright (C) 2015-2019 @dc1394
+　Copyright (C) 2015-2021 @dc1394
 
 　ソースコード形式であれバイナリ形式であれ、変更の有無に関わらず、以下の条件を満
 　たす限りにおいて、再配布および利用を許可します。
@@ -115,10 +116,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 * DEALINGS IN THE SOFTWARE.
 */
-
-  SchracVisualize_Direct3D_11にはIntel CorporationによるIntel® Threading 
-  Building Blocks (Intel® TBB)を使用しています。
-  こちらのライセンスは GNU General Public License, version 2 になります。
 
 　SchracVisualize_Direct3D_11にはGNU ProjectによるGNU Scientific Libraryを使用し
 　ています。こちらのライセンスは GNU General Public License になります。

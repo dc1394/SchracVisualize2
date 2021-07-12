@@ -7,6 +7,7 @@
 
 #include "getdata.h"
 #include "readdatafile.h"
+#include <iterator>                     // for std::distance
 #include <stdexcept>                    // for std::runtime_error
 #include <boost/algorithm/string.hpp>   // for boost::algorithm
 #include <boost/assert.hpp>             // for BOOST_ASSERT
@@ -17,11 +18,11 @@ namespace getdata {
 
     GetData::GetData(std::string const & filename) :
         Atomname([this] { return std::cref(atomname_); }, nullptr),
-        Funcmax([this] { return funcmax_; }, nullptr),
-        Funcmin([this] { return funcmin_; }, nullptr),
+        Phimax([this] { return phimax_; }, nullptr),
         L([this] { return l_; }, nullptr),
         N([this] { return n_; }, nullptr),
         Orbital([this] { return orbital_; }, nullptr),
+        R2rhomaxr([this] { return r2rhomaxr_; }, nullptr),
         Rho_wf_type_([this] { return rho_wf_type_; }, nullptr),
         R_meshmin([this] { return r_meshmin_; }, nullptr),
         acc_(gsl_interp_accel_alloc(), gsl_interp_accel_free),
@@ -88,24 +89,33 @@ namespace getdata {
             break;
         }
 
-        auto const [r_mesh, phi] = ReadDataFile().readdatafile(filename);
+        auto const restuple = ReadDataFile().readdatafile(filename);
+        r_mesh_.assign(std::get<0>(restuple).begin(), std::get<0>(restuple).end());
+        phi_.assign(std::get<1>(restuple).begin(), std::get<1>(restuple).end());
 
-        BOOST_ASSERT(r_mesh.size() == phi.size());
+        BOOST_ASSERT(r_mesh_.size() == phi_.size());
 
-        funcmax_ = *boost::max_element(phi);
+        phimax_ = *boost::max_element(phi_);
 
-        std::vector<double> temp(phi);
-        boost::for_each(temp, [](double & v) { v = v >= 0.0 ? 0.0 : -v; });
-        funcmin_ = -*boost::max_element(temp);
-
-        r_meshmin_ = r_mesh[0];
+        r_meshmin_ = r_mesh_[0];
 
         spline_.reset();
         spline_ = std::unique_ptr<gsl_spline, decltype(&gsl_spline_free)>(
-            gsl_spline_alloc(gsl_interp_cspline, r_mesh.size()), gsl_spline_free);
+            gsl_spline_alloc(gsl_interp_cspline, r_mesh_.size()), gsl_spline_free);
 
-        gsl_spline_init(spline_.get(), r_mesh.data(), phi.data(), r_mesh.size());
+        gsl_spline_init(spline_.get(), r_mesh_.data(), phi_.data(), r_mesh_.size());
+
+        std::vector<double> temp(phi_);
+
+        auto const size = temp.size();
+        for (auto i = 0U; i < size; i++)
+        {
+            temp[i] *= (temp[i] * r_mesh_[i] * r_mesh_[i]);
+        }
+
+        r2rhomaxr_ = r_mesh_[std::distance(temp.begin(), boost::max_element(temp))];
     }
 
     // #endregion コンストラクタ
+
 }
