@@ -6,10 +6,8 @@
     This software is released under the BSD 2-Clause License.
 */
 
-#include "myrandom/myrandsfmt.h"
 #include "orbitaldensityrand.h"
 #include "utility/utility.h"
-#include <random>                                               // for std::random_device, std::default_random_engine, std::normal_distribution
 #include <boost/assert.hpp>                                     // for boost::assert
 #include <boost/math/special_functions/spherical_harmonic.hpp>  // for boost::math::spherical_harmonic
 #include <boost/range/algorithm.hpp>                            // for boost::fill
@@ -27,7 +25,6 @@ namespace orbitaldensityrand {
 		    Vertexsize([this]{ return vertexsize_.load(); }, [this](std::vector<SimpleVertex>::size_type size) { 
 				vertexsize_.store(size);
 				return size; }),
-            mr_(0.0, 1.0),
             pgd_(pgd),
             q_({ 1.0, 0.0, 0.0 }),
 		    rmax_(GetRmax(pgd)),
@@ -128,9 +125,9 @@ namespace orbitaldensityrand {
                 phi,
                 myfunctional::make_functional([this, m, theta](double ph) { return spherical_harmonic_r(pgd_->L, m, theta, ph); }));
 
-            auto x = std::sin(theta) * std::cos(phi) * pgd_->dphidr(r) / (*pgd_)(r);
-            x += std::cos(theta) * std::cos(phi) / r * dylmdtheta / ylm;
-            x -= std::sin(phi) / (r * std::sin(theta)) * dylmdphi / ylm;
+            auto f_x = std::sin(theta) * std::cos(phi) * pgd_->dphidr(r) / (*pgd_)(r);
+            f_x += std::cos(theta) * std::cos(phi) / r * dylmdtheta / ylm;
+            f_x -= std::sin(phi) / (r * std::sin(theta)) * dylmdphi / ylm;
 
             auto const t2 = std::sin(theta) * std::sin(phi);
             if (q_[1] * t2 < 0.0)
@@ -138,16 +135,16 @@ namespace orbitaldensityrand {
                 phi = pi<double>() + phi;
             }
 
-            auto y = std::sin(theta) * std::sin(phi) * pgd_->dphidr(r) / (*pgd_)(r);
-            y += std::cos(theta) * std::sin(phi) / r * dylmdtheta / ylm;
-            y += std::cos(phi) / (r * std::sin(theta)) * dylmdphi / ylm;
+            auto f_y = std::sin(theta) * std::sin(phi) * pgd_->dphidr(r) / (*pgd_)(r);
+            f_y += std::cos(theta) * std::sin(phi) / r * dylmdtheta / ylm;
+            f_y += std::cos(phi) / (r * std::sin(theta)) * dylmdphi / ylm;
 
-            auto z = std::cos(theta) * pgd_->dphidr(r) / (*pgd_)(r);
-            z -= std::sin(theta) / r * dylmdtheta / ylm;
+            auto f_z = std::cos(theta) * pgd_->dphidr(r) / (*pgd_)(r);
+            f_z -= std::sin(theta) / r * dylmdtheta / ylm;
 
-            q_[0] += x * DT + mr_.myrand() * std::sqrt(DT);
-            q_[1] += y * DT + mr_.myrand() * std::sqrt(DT);
-            q_[2] += z * DT + mr_.myrand() * std::sqrt(DT);
+            q_[0] += f_x * DT + mr_.normal_distribution_rand() * std::sqrt(DT);
+            q_[1] += f_y * DT + mr_.normal_distribution_rand() * std::sqrt(DT);
+            q_[2] += f_z * DT + mr_.normal_distribution_rand() * std::sqrt(DT);
 
             vertex_[i].Pos.x = static_cast<float>(q_[0]);
             vertex_[i].Pos.y = static_cast<float>(q_[1]);

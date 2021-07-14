@@ -13,7 +13,7 @@
 #include "DXUT.h"
 #include "getdata/getdata.h"
 #include "myfunctional/functional.h"
-#include "myrandom/myrand.h"
+#include "myrandom/myrandsfmt.h"
 #include "utility/property.h"
 #include <array>                // for std::array
 #include <atomic>               // for std::atomic
@@ -217,9 +217,9 @@ namespace orbitaldensityrand {
 
         //! A private member variable.
         /*!
-            正規分布乱数オブジェクト
+            SFMT乱数オブジェクト
         */
-        myrandom::MyRand mr_;
+        myrandom::MyRandSfmt mr_;
 
         //! A private member variable.
         /*!

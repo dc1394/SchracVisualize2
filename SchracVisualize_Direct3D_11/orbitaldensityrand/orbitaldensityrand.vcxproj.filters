@@ -40,9 +40,6 @@
     <ClInclude Include="myfunctional\functional.h">
       <Filter>myfunctional</Filter>
     </ClInclude>
-    <ClInclude Include="myrandom\myrand.h">
-      <Filter>myrandom</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="getdata\getdata.cpp">

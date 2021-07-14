@@ -53,6 +53,13 @@ namespace myrandom {
 
         //!  A public member function.
         /*!
+            平均0、分散1の正規乱数を生成する
+            \return 平均0、分散1の正規乱数
+        */
+        double normal_distribution_rand();
+
+        //!  A public member function.
+        /*!
             平均mu、分散sigma^2の正規乱数を生成する
             \param mu 正規乱数の平均
             \param sigma2 正規乱数の分散

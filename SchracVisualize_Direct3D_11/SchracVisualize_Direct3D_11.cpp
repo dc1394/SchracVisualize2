@@ -55,6 +55,12 @@ struct CBChangesEveryFrame2
 
 //! A global variable (constant).
 /*!
+    CPUのスレッド数
+*/
+static auto const CPUTHREADS = static_cast<std::int32_t>(std::thread::hardware_concurrency());
+
+//! A global variable (constant).
+/*!
     カメラの位置の倍率
 */
 static auto constexpr MAGNIFICATION = 1.2f;
@@ -948,6 +954,10 @@ void RenderText(double fTime)
     pTxtHelper->SetForegroundColor(Colors::Yellow);
     pTxtHelper->DrawTextLine(DXUTGetFrameStats(DXUTIsVsyncEnabled()));
     pTxtHelper->DrawTextLine(DXUTGetDeviceStats());
+    if (nornel == OrbitalDensityRand::Normal_Nelson_type::NORMAL)
+    {
+        pTxtHelper->DrawTextLine((boost::wformat(L"CPU threads: %d") % CPUTHREADS).str().c_str());
+    }
     pTxtHelper->DrawTextLine((boost::wformat(L"Total vertices = %d") % podr->Vertexsize()).str().c_str());
     pTxtHelper->DrawTextLine((boost::wformat(L"Calculation time = %.3f(sec)") % calctime).str().c_str());
 
