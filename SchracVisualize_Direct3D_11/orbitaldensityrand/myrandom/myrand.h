@@ -10,7 +10,6 @@
 
 #pragma once
 
-#include <cmath>    // for std::sqrt
 #include <random>   // for std::default_random_engine, std::normal_distribution, std::random_device
 
 namespace myrandom {
@@ -101,8 +100,6 @@ namespace myrandom {
 
         randengine_ = std::default_random_engine(rnd());
     }
-
-
 }
 
 #endif  // _MYRAND_H_
