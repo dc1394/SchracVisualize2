@@ -67,6 +67,18 @@ static auto constexpr MAGNIFICATION = 1.2f;
 
 //! A global variable (constant).
 /*!
+    頂点数の初期値（通常）
+*/
+static std::vector<SimpleVertex>::size_type const PHI_VERTEXSIZE_INIT_VALUE = 1000000;
+
+//! A global variable (constant).
+/*!
+    頂点数の初期値（通常）
+*/
+static std::vector<SimpleVertex>::size_type const RHO_VERTEXSIZE_INIT_VALUE = 5000000;
+
+//! A global variable (constant).
+/*!
     画面サイズ（高さ）
 */
 static auto constexpr WINDOWHEIGHT = 960;
@@ -213,11 +225,6 @@ Microsoft::WRL::ComPtr<ID3D11InputLayout> pVertexLayout;
 */
 Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShaderBox;
 
-//! A global variable.
-/*!
-    実部と虚部のどちらを描画するか
-*/
-auto reim = OrbitalDensityRand::Re_Im_type::REAL;
 
 //! A global variable.
 /*!
@@ -242,10 +249,8 @@ static auto constexpr IDC_LOADNEWFILE      = 4;
 static auto constexpr IDC_COMBOBOX         = 5;
 static auto constexpr IDC_RADIOA           = 6;
 static auto constexpr IDC_RADIOB           = 7;
-static auto constexpr IDC_RADIOC           = 8;
-static auto constexpr IDC_RADIOD           = 9;
-static auto constexpr IDC_OUTPUT           = 10;
-static auto constexpr IDC_SLIDER           = 11;
+static auto constexpr IDC_OUTPUT           = 8;
+static auto constexpr IDC_SLIDER           = 9;
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -638,6 +643,7 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
         podr.emplace(pgd);
         first = true;
         nornel = OrbitalDensityRand::Normal_Nelson_type::NORMAL;
+        podr->Vertexsize(pgd->Rho_wf_type == getdata::GetData::Rho_Wf_type::RHO ? OrbitalDensityRand::RHO_VERTEXSIZE_INIT_VALUE : OrbitalDensityRand::WF_VERTEXSIZE_INIT_VALUE);
         ::SetWindowText(DXUTGetHWND(), CreateWindowTitle().c_str());
         hud.RemoveAllControls();
         drawdata = 1U;
@@ -659,7 +665,7 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
     case IDC_RADIOA:
         nornel = OrbitalDensityRand::Normal_Nelson_type::NORMAL;
         RedrawFlagTrue();
-        podr->Vertexsize(OrbitalDensityRand::VERTEXSIZE_INIT_VALUE);
+        podr->Vertexsize(OrbitalDensityRand::WF_VERTEXSIZE_INIT_VALUE);
         ::SetWindowText(DXUTGetHWND(), CreateWindowTitle().c_str());
         hud.RemoveAllControls();
         SetUI();
@@ -673,18 +679,6 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
         ::SetWindowText(DXUTGetHWND(), CreateWindowTitle().c_str());
         hud.RemoveAllControls();
         SetUI();
-        Redraw();
-        break;
-
-    case IDC_RADIOC:
-        reim = OrbitalDensityRand::Re_Im_type::REAL;
-        RedrawFlagTrue();
-        Redraw();
-        break;
-
-    case IDC_RADIOD:
-        reim = OrbitalDensityRand::Re_Im_type::IMAGINARY;
-        RedrawFlagTrue();
         Redraw();
         break;
 
@@ -725,7 +719,7 @@ std::wstring CreateWindowTitle()
     switch (nornel)
     {
     case OrbitalDensityRand::Normal_Nelson_type::NORMAL:
-        switch (pgd->Rho_wf_type_)
+        switch (pgd->Rho_wf_type)
         {
         case getdata::GetData::Rho_Wf_type::RHO:
             windowtitle = "Electron density";
@@ -736,7 +730,7 @@ std::wstring CreateWindowTitle()
             break;
 
         default:
-            BOOST_ASSERT(!"pgd->Rho_wf_type_が異常!");
+            BOOST_ASSERT(!"pgd->Rho_wf_typeが異常!");
             break;
         }
         windowtitle += " in " + pgd->Atomname() + " for " + pgd->Orbital() + " orbital";
@@ -761,22 +755,22 @@ HRESULT RenderPoint()
     auto const index = drawdata & 0x0F;
     switch (pgd->L) {
     case 0:
-        (*podr)(0, nornel, reim);
+        (*podr)(0, nornel);
         break;
 
     case 1:
     {
         switch (index) {
         case 1:
-            (*podr)(1, nornel, reim);
+            (*podr)(1, nornel);
             break;
 
         case 2:
-            (*podr)(-1, nornel, reim);
+            (*podr)(-1, nornel);
             break;
 
         case 3:
-            (*podr)(0, nornel, reim);
+            (*podr)(0, nornel);
             break;
 
         default:
@@ -790,23 +784,23 @@ HRESULT RenderPoint()
     {
         switch (index) {
         case 1:
-            (*podr)(-2, nornel, reim);
+            (*podr)(-2, nornel);
             break;
 
         case 2:
-            (*podr)(-1, nornel, reim);
+            (*podr)(-1, nornel);
             break;
 
         case 3:
-            (*podr)(1, nornel, reim);
+            (*podr)(1, nornel);
             break;
 
         case 4:
-            (*podr)(2, nornel, reim);
+            (*podr)(2, nornel);
             break;
 
         case 5:
-            (*podr)(0, nornel, reim);
+            (*podr)(0, nornel);
             break;
 
         default:
@@ -820,31 +814,31 @@ HRESULT RenderPoint()
     {
         switch (index) {
         case 1:
-            (*podr)(1, nornel, reim);
+            (*podr)(1, nornel);
             break;
 
         case 2:
-            (*podr)(-1, nornel, reim);
+            (*podr)(-1, nornel);
             break;
 
         case 3:
-            (*podr)(2, nornel, reim);
+            (*podr)(2, nornel);
             break;
 
         case 4:
-            (*podr)(-2, nornel, reim);
+            (*podr)(-2, nornel);
             break;
 
         case 5:
-            (*podr)(3, nornel, reim);
+            (*podr)(3, nornel);
             break;
 
         case 6:
-            (*podr)(-3, nornel, reim);
+            (*podr)(-3, nornel);
             break;
 
         case 7:
-            (*podr)(0, nornel, reim);
+            (*podr)(0, nornel);
             break;
 
         default:
@@ -1037,32 +1031,24 @@ void SetUI()
             break;
         }
 
-        if (pgd->Rho_wf_type_ == getdata::GetData::Rho_Wf_type::WF && nornel == OrbitalDensityRand::Normal_Nelson_type::NORMAL)
+        if (pgd->Rho_wf_type == getdata::GetData::Rho_Wf_type::WF && nornel == OrbitalDensityRand::Normal_Nelson_type::NORMAL)
         {
             // Radio buttons
             hud.AddRadioButton(IDC_RADIOA, 1, L"Normal", 35, iY += 34, 125, 22, true, L'1');
             hud.AddRadioButton(IDC_RADIOB, 1, L"Nelson", 35, iY += 28, 125, 22, false, L'2');
-
-            hud.AddRadioButton(IDC_RADIOC, 2, L"Real part", 35, iY += 40, 125, 22, true, L'3');
-            hud.AddRadioButton(IDC_RADIOD, 2, L"Imaginary part", 35, iY += 28, 125, 22, false, L'4');
         }
-        else if (pgd->Rho_wf_type_ == getdata::GetData::Rho_Wf_type::WF)
+        else if (pgd->Rho_wf_type == getdata::GetData::Rho_Wf_type::WF)
         {
             // Radio buttons
             hud.AddRadioButton(IDC_RADIOA, 1, L"Normal", 35, iY += 34, 125, 22, false, L'1');
             hud.AddRadioButton(IDC_RADIOB, 1, L"Nelson", 35, iY += 28, 125, 22, true, L'2');
-        }
-        else
-        {
-            hud.AddRadioButton(IDC_RADIOC, 1, L"Real part", 35, iY += 40, 125, 22, true, L'1');
-            hud.AddRadioButton(IDC_RADIOD, 1, L"Imaginary part", 35, iY += 28, 125, 22, false, L'2');
         }
     }
 
     // 角度の調整
     hud.AddStatic(IDC_OUTPUT, L"Vertex size", 20, iY += 34, 125, 22);
     hud.GetStatic(IDC_OUTPUT)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
-    auto const max = nornel == OrbitalDensityRand::Normal_Nelson_type::NORMAL ? 5000000 : 10000000;
+    auto const max = nornel == OrbitalDensityRand::Normal_Nelson_type::NORMAL ? 50000000 : 10000000;
     hud.AddSlider(IDC_SLIDER, 35, iY += 24, 125, 22, 0, max, static_cast<std::int32_t>(podr->Vertexsize));
 
     ui.SetCallback(OnGUIEvent);

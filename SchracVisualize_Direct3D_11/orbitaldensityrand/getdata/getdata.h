@@ -119,7 +119,7 @@ namespace getdata {
         /*!
             解く方程式のタイプへのプロパティ
         */
-        Property<GetData::Rho_Wf_type> const Rho_wf_type_;
+        Property<GetData::Rho_Wf_type> const Rho_wf_type;
 
         //! A property.
         /*!

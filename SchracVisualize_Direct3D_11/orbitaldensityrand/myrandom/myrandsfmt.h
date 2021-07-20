@@ -67,18 +67,6 @@ namespace myrandom {
         */
         double normal_distribution_rand(double mu, double sigma2);
 
-        //!  A public member function.
-        /*!
-            [min, max]の閉区間で一様乱数を生成する
-            \param min 乱数分布の最小値
-            \param max 乱数分布の最大値
-            \return [min, max]の閉区間における一様乱数
-        */
-        double myrand(double min, double max)
-        {
-            return sfmt_genrand_real1(&sfmt_) * (max - min) + min;
-        }
-
         // #endregion メンバ関数
 
         // #region メンバ変数

@@ -9,16 +9,20 @@
 #include "orbitaldensityrand.h"
 #include "utility/utility.h"
 #include <boost/assert.hpp>                                     // for boost::assert
+#include <boost/math/constants/constants.hpp>                   // for boost::math::constants::pi
 #include <boost/math/special_functions/spherical_harmonic.hpp>  // for boost::math::spherical_harmonic
 #include <boost/range/algorithm.hpp>                            // for boost::fill
 
 namespace orbitaldensityrand {
+    // #region コンストラクタ
+
 	OrbitalDensityRand::OrbitalDensityRand(std::shared_ptr<getdata::GetData> const & pgd)
         :   Complete([this] { return complete_.load(); }, nullptr),
             Pth([this] { return std::cref(pth_); }, nullptr),
 		    Redraw(nullptr, [this](auto redraw) { return redraw_ = redraw; }),
+            //Rho_Wf_type([this] { return rho_wf_type_; }, nullptr),
             Rmax([this] { return rmax_; }, nullptr),
-		    Thread_end(nullptr, [this](auto thread_end) { 
+            Thread_end(nullptr, [this](auto thread_end) { 
 			    thread_end_.store(thread_end);
 			    return thread_end; }),
             Vertex([this] { return std::cref(vertex_); }, nullptr),
@@ -26,20 +30,25 @@ namespace orbitaldensityrand {
 				vertexsize_.store(size);
 				return size; }),
             pgd_(pgd),
-            q_({ 1.0, 0.0, 0.0 }),
+            q_({ 1.0, 1.0, 0.0 }),
 		    rmax_(GetRmax(pgd)),
-		    vertex_(VERTEXSIZE_INIT_VALUE)
+		    vertex_(pgd_->Rho_wf_type == getdata::GetData::Rho_Wf_type::RHO ? RHO_VERTEXSIZE_INIT_VALUE : WF_VERTEXSIZE_INIT_VALUE),
+            vertexsize_(pgd_->Rho_wf_type == getdata::GetData::Rho_Wf_type::RHO ? RHO_VERTEXSIZE_INIT_VALUE : WF_VERTEXSIZE_INIT_VALUE)
     {
     }
 
-    void OrbitalDensityRand::operator()(std::int32_t m, Normal_Nelson_type nornel, Re_Im_type reim)
+    // #endregion コンストラクタ
+
+    // #region privateメンバ関数
+
+    void OrbitalDensityRand::operator()(std::int32_t m, Normal_Nelson_type nornel)
     {
         if (redraw_) {
             if (vertex_.size() != vertexsize_) {
                 vertex_.resize(vertexsize_);
             }
 
-            pth_.reset(new std::thread([this, m, nornel, reim] { ClearFillSimpleVertex(m, nornel, reim); }), [this](std::thread * pth)
+            pth_.reset(new std::thread([this, m, nornel] { ClearFillSimpleVertex(m, nornel); }), [this](std::thread * pth)
             {
                 if (pth->joinable()) {
                     thread_end_.store(true);
@@ -53,7 +62,7 @@ namespace orbitaldensityrand {
         }
     }
 
-	void OrbitalDensityRand::ClearFillSimpleVertex(std::int32_t m, Normal_Nelson_type nornel, Re_Im_type reim)
+	void OrbitalDensityRand::ClearFillSimpleVertex(std::int32_t m, Normal_Nelson_type nornel)
 	{
 		complete_.store(false);
 
@@ -71,9 +80,9 @@ namespace orbitaldensityrand {
 
                 auto thvec = std::vector<std::thread>(threads);
                 for (auto i = 0; i < threads - 1; i++) {
-                    thvec[i] = std::thread([i, m, num, reim, this]() { FillSimpleVertex(m, reim, num * i, num * (i + 1)); });
+                    thvec[i] = std::thread([i, m, num, this]() { FillSimpleVertex(m, num * i, num * (i + 1)); });
                 }
-                thvec[threads - 1] = std::thread([m, num, reim, threads, this]() { FillSimpleVertex(m, reim, num * (threads - 1), static_cast<std::int32_t>(vertexsize_.load())); });
+                thvec[threads - 1] = std::thread([m, num, threads, this]() { FillSimpleVertex(m, num * (threads - 1), static_cast<std::int32_t>(vertexsize_.load())); });
 
                 for (auto && th : thvec) {
                     th.join();
@@ -105,25 +114,25 @@ namespace orbitaldensityrand {
 
             auto const r = std::hypot(q_[0], q_[1], q_[2]);
 
-            auto const theta1 = std::acos(q_[2] / r);
-            auto const theta2 = std::atan(std::hypot(q_[0], q_[1]) / q_[2]);
-            auto const theta = (theta1 < 0.0 && theta2 < 0.0) ? 2.0 * pi<double>() - theta1 : theta1;
-
-            auto phi = std::atan(q_[1] / q_[0]);
-
-            auto const t1 = std::sin(theta) * std::cos(phi);
-            if (q_[0] * t1 < 0.0)
-            {
-                phi = pi<double>() - phi;
+            double phi = 0.0;
+            if (std::fabs(q_[1]) < EPS) {
+                if (q_[0] < 0.0) {
+                    phi = boost::math::constants::pi<double>();
+                }
             }
+            else if (q_[0] * q_[0] + q_[1] * q_[1] > 0.0) {
+                auto const sign = q_[1] > 0 ? 1 : -1;
+                phi = sign * std::acos(q_[0] / std::sqrt(q_[0] * q_[0] + q_[1] * q_[1]));
+            }
+            auto const theta = std::acos(q_[2] / r);
 
-            auto const ylm = spherical_harmonic_r(pgd_->L, m, theta, phi);
+            auto const ylm = Spherical_harmonic(pgd_->L, m, theta, phi);
             auto const dylmdtheta = Numerical_diff(
                 theta,
-                myfunctional::make_functional([this, m, phi](double th) { return spherical_harmonic_r(pgd_->L, m, th, phi); }));
+                myfunctional::make_functional([this, m, phi](double th) { return Spherical_harmonic(pgd_->L, m, th, phi); }));
             auto const dylmdphi = Numerical_diff(
                 phi,
-                myfunctional::make_functional([this, m, theta](double ph) { return spherical_harmonic_r(pgd_->L, m, theta, ph); }));
+                myfunctional::make_functional([this, m, theta](double ph) { return Spherical_harmonic(pgd_->L, m, theta, ph); }));
 
             auto f_x = std::sin(theta) * std::cos(phi) * pgd_->dphidr(r) / (*pgd_)(r);
             f_x += std::cos(theta) * std::cos(phi) / r * dylmdtheta / ylm;
@@ -157,15 +166,11 @@ namespace orbitaldensityrand {
         }
     }
 
-	void OrbitalDensityRand::FillSimpleVertex(std::int32_t m, Re_Im_type reim, std::int32_t starti, std::int32_t endi)
+	void OrbitalDensityRand::FillSimpleVertex(std::int32_t m, std::int32_t starti, std::int32_t endi)
 	{
 		if (thread_end_) {
 			return;
 		}
-
-        if (!m && pgd_->Rho_wf_type_ == getdata::GetData::Rho_Wf_type::WF && reim == Re_Im_type::IMAGINARY) {
-            return;
-        }
 
 		auto sign = 1;
 		auto x = 0.0;
@@ -182,7 +187,7 @@ namespace orbitaldensityrand {
                 return;
             }
 
-            switch (pgd_->Rho_wf_type_) {
+            switch (pgd_->Rho_wf_type) {
             case getdata::GetData::Rho_Wf_type::RHO:
             {
                 auto rho = [this, m, nextflag](auto x, auto y, auto z) mutable
@@ -192,18 +197,23 @@ namespace orbitaldensityrand {
                         nextflag = true;
                         return 0.0;
                     }
-                    auto const phi = std::acos(x / std::sqrt(x * x + y * y));
-                    double v;
-                    if (m >= 0) {
-                        v = boost::math::spherical_harmonic_r(pgd_->L, m, std::acos(z / r), phi);
+
+                    double phi = 0.0;
+                    if (std::fabs(y) < EPS) {
+                        if (x < 0.0) {
+                            phi = boost::math::constants::pi<double>();
+                        }
                     }
-                    else {
-                        v = boost::math::spherical_harmonic_i(pgd_->L, m, std::acos(z / r), phi);
+                    else if (x * x + y * y > 0.0) {
+                        auto const sign = y > 0 ? 1 : -1;
+                        phi = sign * std::acos(x / std::sqrt(x * x + y * y));
                     }
 
-                    return ((*pgd_)(r) * v * v);
+                    auto const ylm = Spherical_harmonic(pgd_->L, m, std::acos(z / r), phi);
+
+                    return (*pgd_)(r) * ylm * ylm;
                 };
-                
+
                 auto const maxr = pgd_->R2rhomaxr();
 
                 auto const x_star = mr.normal_distribution_rand(x, maxr);
@@ -222,47 +232,46 @@ namespace orbitaldensityrand {
                 auto const rho_star = rho(x_star, y_star, z_star);  // x* の電子密度
 
                 // 採択率を計算  α = p(x*) / p(x_t)
-                auto const alpha = rho_star / rho_t;
+                auto const alpha = (rho_star * rho_star) / (rho_t * rho_t);
 
-                //採択率により決定
+                // 採択率により決定
                 auto const ar = mr.myrand();    // 0 <= ar <= 1 の一様乱数 ar を生成
                 if (ar <= alpha) {              // 採択
                     x = x_star;
                     y = y_star;
                     z = z_star;
+                    if (rho_star >= 0.0) {
+                        sign = 1;
+                    }
+                    else {
+                        sign = -1;
+                    }
                 }
-                else {                          // 採択しない
-                    continue;
-                }                
             }
             break;
 
             case getdata::GetData::Rho_Wf_type::WF:
             {
-                auto phi = [this, m, nextflag, reim](auto x, auto y, auto z) mutable
+                auto phi = [this, m, nextflag](auto x, auto y, auto z) mutable
                 {
                     auto const r = std::sqrt(x * x + y * y + z * z);
                     if (r < pgd_->R_meshmin()) {
                         nextflag = true;
                         return 0.0;
                     }
-                    auto const phi = std::acos(x / std::sqrt(x * x + y * y));
-                    double ylm = 0.0;
-                    switch (reim) {
-                    case Re_Im_type::REAL:
-                        ylm = boost::math::spherical_harmonic_r(pgd_->L, m, std::acos(z / r), phi);
-                        break;
 
-                    case Re_Im_type::IMAGINARY:
-                        ylm = boost::math::spherical_harmonic_i(pgd_->L, m, std::acos(z / r), phi);
-                        break;
-
-                    default:
-                        BOOST_ASSERT(!"何かがおかしい!");
-                        break;
+                    double phi = 0.0;
+                    if (std::fabs(y) < EPS) {
+                        if (x < 0.0) {
+                            phi = boost::math::constants::pi<double>();
+                        }
+                    }
+                    else if (x * x + y * y > 0.0) {
+                        auto const sign = y > 0 ? 1 : -1;
+                        phi = sign * std::acos(x / std::sqrt(x * x + y * y));
                     }
 
-                    return (*pgd_)(r) * ylm;
+                    return (*pgd_)(r) * Spherical_harmonic(pgd_->L, m, std::acos(z / r), phi);
                 };
 
                 auto const maxr = pgd_->R2rhomaxr();
@@ -321,9 +330,31 @@ namespace orbitaldensityrand {
 		} while (cnt < (endi - starti));
 	}
 
+    // #endregion privateメンバ関数
+
+    // #region フリー関数
+
 	double GetRmax(std::shared_ptr<getdata::GetData> const & pgd)
 	{
 		auto const n = static_cast<double>(pgd->N);
 		return (2.3622 * n + 3.3340) * n + 1.3228;
 	}
+
+    double Spherical_harmonic(std::int32_t l, std::int32_t m, double theta, double phi)
+    {
+        if (!m) {
+            return boost::math::spherical_harmonic_r(l, m, theta, phi);
+        }
+        else if (m > 0) {
+            auto const sign = (m & 1 ? -1 : 1);
+            return (sign * boost::math::spherical_harmonic_r(l, m, theta, phi) + boost::math::spherical_harmonic_r(l, -m, theta, phi)) / std::sqrt(2.0);
+        }
+        else {
+            m = -m;
+            auto const sign = (m & 1 ? -1 : 1);
+            return (sign * boost::math::spherical_harmonic_i(l, m, theta, phi) - boost::math::spherical_harmonic_i(l, -m, theta, phi)) / std::sqrt(2.0);
+        }
+    }
+
+    // #endregion フリー関数
 }

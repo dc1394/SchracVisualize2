@@ -51,17 +51,6 @@ namespace orbitaldensityrand {
             NELSON
         };
 
-        //! A enumerated type
-        /*!
-            実部か虚部かを表す列挙型
-        */
-        enum class Re_Im_type {
-            // 実部
-            REAL,
-            // 虚部
-            IMAGINARY
-        };
-
         // #endregion 列挙型
 
         // #region コンストラクタ・デストラクタ
@@ -88,10 +77,9 @@ namespace orbitaldensityrand {
             再描画する
             \param m 磁気量子数
             \param nornel ネルソンの確率力学を使用するかどうか
-            \param reim 実部を描画するか、虚部を描画するか
             \return 再描画が成功したかどうか
         */
-        void operator()(std::int32_t m, Normal_Nelson_type nornel, Re_Im_type reim);
+        void operator()(std::int32_t m, Normal_Nelson_type nornel);
 
     private:
         //! A private member function.
@@ -99,9 +87,8 @@ namespace orbitaldensityrand {
             SimpleVertexのデータをクリアし、新しいデータを詰める
             \param m 磁気量子数
             \param nornel ネルソンの確率力学を使用するかどうか
-            \param reim 実部を描画するか、虚部を描画するか
         */
-        void ClearFillSimpleVertex(std::int32_t m, Normal_Nelson_type nornel, Re_Im_type reim);
+        void ClearFillSimpleVertex(std::int32_t m, Normal_Nelson_type nornel);
 
         //! A private member function.
         /*!
@@ -114,9 +101,10 @@ namespace orbitaldensityrand {
         /*!
             SimpleVertexにデータを詰める
             \param m 磁気量子数
-            \param reim 実部を描画するか、虚部を描画するか
+            \param starti 描画開始の際のiのインデックス
+            \param endi 描画終了の際のiのインデックス
         */
-        void FillSimpleVertex(std::int32_t m, Re_Im_type reim, std::int32_t starti, std::int32_t endi);
+        void FillSimpleVertex(std::int32_t m, std::int32_t starti, std::int32_t endi);
 
         //! A private member function.
         /*!
@@ -180,15 +168,21 @@ namespace orbitaldensityrand {
 
         //! A public static member variable (constant).
         /*!
-            頂点数の初期値（通常）
+            頂点数の初期値（電子密度）
         */
-        static std::vector<SimpleVertex>::size_type const VERTEXSIZE_INIT_VALUE = 1000000;
+        static std::vector<SimpleVertex>::size_type const RHO_VERTEXSIZE_INIT_VALUE = 5000000;
 
         //! A public static member variable (constant).
         /*!
             頂点数の初期値（ネルソンの確率力学）
         */
         static std::vector<SimpleVertex>::size_type const VERTEXSIZE_INIT_VALUE_FOR_NELSON = 5000000;
+
+        //! A public static member variable (constant).
+        /*!
+            頂点数の初期値（波動関数）
+        */
+        static std::vector<SimpleVertex>::size_type const WF_VERTEXSIZE_INIT_VALUE = 1000000;
 
     private:
         //! A private member variable (constant expression).
@@ -244,7 +238,7 @@ namespace orbitaldensityrand {
             再描画するかどうか
         */
         bool redraw_ = true;
-
+        
         //! A private member variable.
         /*!
             描画するrの最大値
@@ -261,7 +255,7 @@ namespace orbitaldensityrand {
         /*!
             頂点数
         */
-        std::atomic<std::vector<SimpleVertex>::size_type> vertexsize_ = VERTEXSIZE_INIT_VALUE;
+        std::atomic<std::vector<SimpleVertex>::size_type> vertexsize_;
 
         //! A private member variable.
         /*!
@@ -303,6 +297,17 @@ namespace orbitaldensityrand {
         \return rmaxの値
     */
     double GetRmax(std::shared_ptr<getdata::GetData> const& pgd);
+
+    //! A function.
+    /*!
+        実関数表示の球面調和関数を求める
+        \param l 方位量子数
+        \param m 磁気量子数
+        \param theta θ
+        \param phi φ
+        \return 実関数表示の球面調和関数
+    */
+    double Spherical_harmonic(std::int32_t l, std::int32_t m, double theta, double phi);
 
     template <typename FUNCTYPE>
     inline double OrbitalDensityRand::Numerical_diff(double x, myfunctional::Functional<FUNCTYPE> const & func)
