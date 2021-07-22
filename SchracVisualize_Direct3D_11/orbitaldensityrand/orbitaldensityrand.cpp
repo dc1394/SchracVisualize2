@@ -31,7 +31,8 @@ namespace orbitaldensityrand {
 				vertexsize_.store(size);
 				return size; }),
             pgd_(pgd),
-            q_({ 1.0, 1.0, 0.0 }),
+            q0_({ 1.0, 1.0, 0.0 }),
+            q_(q0_),
 		    rmax_(GetRmax(pgd)),
 		    vertex_(pgd_->Rho_wf_type == getdata::GetData::Rho_Wf_type::RHO ? RHO_VERTEXSIZE_INIT_VALUE : WF_VERTEXSIZE_INIT_VALUE),
             vertexsize_(pgd_->Rho_wf_type == getdata::GetData::Rho_Wf_type::RHO ? RHO_VERTEXSIZE_INIT_VALUE : WF_VERTEXSIZE_INIT_VALUE)
@@ -108,15 +109,21 @@ namespace orbitaldensityrand {
         using namespace boost::math;
         using namespace constants;
 
-        for (auto i = 0UL; i < vertexsize_.load(); i++) {
+        auto cnt = 0;
+        do {
             if (thread_end_) {
                 return;
             }
 
             auto const r = std::hypot(q_[0], q_[1], q_[2]);
 
+            if (r < pgd_->R_meshmin() || r > pgd_->R_meshmax()) {
+                Resetq();
+                continue;
+            }
+
             double phi = 0.0;
-            if (std::fabs(q_[1]) < EPS) {
+            if (std::fabs(q_[1]) < THRESHOLD) {
                 if (q_[0] < 0.0) {
                     phi = boost::math::constants::pi<double>();
                 }
@@ -131,19 +138,24 @@ namespace orbitaldensityrand {
             auto const dylmdtheta = Numerical_diff(
                 theta,
                 myfunctional::make_functional([this, m, phi](double th) { return Spherical_harmonic(pgd_->L, m, th, phi); }));
+
+            if (std::fabs(ylm) < THRESHOLD && std::fabs(dylmdtheta) < THRESHOLD) {
+                Resetq();
+                continue;
+            }
+
             auto const dylmdphi = Numerical_diff(
                 phi,
                 myfunctional::make_functional([this, m, theta](double ph) { return Spherical_harmonic(pgd_->L, m, theta, ph); }));
 
+            if (std::fabs(ylm) < THRESHOLD && std::fabs(dylmdphi) < THRESHOLD) {
+                Resetq();
+                continue;
+            }
+
             auto f_x = std::sin(theta) * std::cos(phi) * pgd_->dphidr(r) / (*pgd_)(r);
             f_x += std::cos(theta) * std::cos(phi) / r * dylmdtheta / ylm;
             f_x -= std::sin(phi) / (r * std::sin(theta)) * dylmdphi / ylm;
-
-            auto const t2 = std::sin(theta) * std::sin(phi);
-            if (q_[1] * t2 < 0.0)
-            {
-                phi += pi<double>();
-            }
 
             auto f_y = std::sin(theta) * std::sin(phi) * pgd_->dphidr(r) / (*pgd_)(r);
             f_y += std::cos(theta) * std::sin(phi) / r * dylmdtheta / ylm;
@@ -156,15 +168,17 @@ namespace orbitaldensityrand {
             q_[1] += f_y * DT + mr_.normal_distribution_rand() * std::sqrt(DT);
             q_[2] += f_z * DT + mr_.normal_distribution_rand() * std::sqrt(DT);
 
-            vertex_[i].Pos.x = static_cast<float>(q_[0]);
-            vertex_[i].Pos.y = static_cast<float>(q_[1]);
-            vertex_[i].Pos.z = static_cast<float>(q_[2]);
+            vertex_[cnt].Pos.x = static_cast<float>(q_[0]);
+            vertex_[cnt].Pos.y = static_cast<float>(q_[1]);
+            vertex_[cnt].Pos.z = static_cast<float>(q_[2]);
 
-            vertex_[i].Color.x = 0.8f;
-            vertex_[i].Color.y = 0.0f;
-            vertex_[i].Color.z = 0.8f;
-            vertex_[i].Color.w = 1.0f;
-        }
+            vertex_[cnt].Color.x = 0.8f;
+            vertex_[cnt].Color.y = 0.0f;
+            vertex_[cnt].Color.z = 0.8f;
+            vertex_[cnt].Color.w = 1.0f;
+
+            cnt++;
+        } while (cnt < vertexsize_.load());
     }
 
 	void OrbitalDensityRand::FillSimpleVertex(std::int32_t m, std::int32_t starti, std::int32_t endi)

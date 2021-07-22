@@ -5,8 +5,8 @@
     This software is released under the BSD 2-Clause License.
 */
 
-#include <cmath>            // for std::sqrt, std::log, std::cos, std::sin
 #include "myrandsfmt.h"
+#include <cmath>            // for std::sqrt, std::log, std::cos, std::sin
 
 namespace myrandom {
     double MyRandSfmt::normal_distribution_rand()

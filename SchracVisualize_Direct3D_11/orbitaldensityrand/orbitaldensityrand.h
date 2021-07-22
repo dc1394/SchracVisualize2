@@ -115,6 +115,15 @@ namespace orbitaldensityrand {
         template <typename FUNCTYPE>
         double Numerical_diff(double x, myfunctional::Functional<FUNCTYPE> const & func);
 
+        //! A private member function.
+        /*!
+            現在の座標を初期値に戻す
+        */
+        void Resetq()
+        {
+            q_ = q0_;
+        }
+
         // #endregion メンバ関数
 
         // #region プロパティ
@@ -203,6 +212,12 @@ namespace orbitaldensityrand {
         */
         static auto constexpr EPS = 1.0E-15;
 
+        //! A private member variable (constant expression).
+        /*!
+            0の判定に使う閾値
+        */
+        static auto constexpr THRESHOLD = 1.0E-15;
+                
         //! A private member variable.
         /*!
             描画スレッドの作業が完了したかどうか
@@ -226,6 +241,12 @@ namespace orbitaldensityrand {
             スレッドへのスマートポインタ
         */
         std::shared_ptr<std::thread> pth_;
+
+        //! A private member variable (constant expression).
+        /*!
+            座標の初期値
+        */
+        std::array<double, 3> const q0_;
 
         //! A private member variable.
         /*!

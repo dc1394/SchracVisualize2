@@ -24,6 +24,7 @@ namespace getdata {
         Orbital([this] { return orbital_; }, nullptr),
         R2rhomaxr([this] { return r2rhomaxr_; }, nullptr),
         Rho_wf_type([this] { return rho_wf_type_; }, nullptr),
+        R_meshmax([this] { return r_meshmax_; }, nullptr),
         R_meshmin([this] { return r_meshmin_; }, nullptr),
         acc_(gsl_interp_accel_alloc(), gsl_interp_accel_free),
         spline_(nullptr, gsl_spline_free)
@@ -97,6 +98,7 @@ namespace getdata {
 
         phimax_ = *boost::max_element(phi_);
 
+        r_meshmax_ = r_mesh_.back();
         r_meshmin_ = r_mesh_[0];
 
         spline_.reset();

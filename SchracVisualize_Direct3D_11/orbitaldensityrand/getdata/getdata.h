@@ -123,6 +123,12 @@ namespace getdata {
 
         //! A property.
         /*!
+            rのメッシュの最大値のプロパティ
+        */
+        Property<double> const R_meshmax;
+
+        //! A property.
+        /*!
             rのメッシュの最小値のプロパティ
         */
         Property<double> const R_meshmin;
@@ -186,6 +192,12 @@ namespace getdata {
             解く方程式のタイプ
         */
         Rho_Wf_type rho_wf_type_;
+
+        //!  A private member variable.
+        /*!
+            rのメッシュの最大値
+        */
+        double r_meshmax_;
 
         //!  A private member variable.
         /*!
