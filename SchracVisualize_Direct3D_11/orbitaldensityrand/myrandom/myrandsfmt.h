@@ -11,7 +11,6 @@
 #pragma once
 
 #include "../SFMT-src-1.5.1/SFMT.h"
-#include <cmath>                                // for std::sqrt, std::log, std::cos, std::sin
 #include <optional>                             // for std::optional
 #include <random>						        // for std::random_device
 #include <boost/math/constants/constants.hpp>   // for boost::math::constants::pi

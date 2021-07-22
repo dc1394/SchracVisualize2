@@ -1,8 +1,9 @@
 ﻿/*! \file orbitaldensityrand.cpp
     \brief OrbitalDensityRandクラスの実装
 
-    Copyright © 2019 @dc1394 All Rights Reserved.
+    Copyright © 2019-2021 @dc1394 All Rights Reserved.
     (but this is originally adapted by サンマヤ for TDXHydrogenScene.cpp from http://sammaya.garyoutensei.com/math_phys/phys_sym/monte_hydrogen.html )
+    https://tsujimotter.hatenablog.com/entry/metropolis-hastings-algorithm も参考にさせて頂きました
     This software is released under the BSD 2-Clause License.
 */
 
@@ -141,7 +142,7 @@ namespace orbitaldensityrand {
             auto const t2 = std::sin(theta) * std::sin(phi);
             if (q_[1] * t2 < 0.0)
             {
-                phi = pi<double>() + phi;
+                phi += pi<double>();
             }
 
             auto f_y = std::sin(theta) * std::sin(phi) * pgd_->dphidr(r) / (*pgd_)(r);
