@@ -414,7 +414,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 
     // Compile the vertex shader
     Microsoft::WRL::ComPtr<ID3DBlob> pVSBlob;
-    V_RETURN(DXUTCompileFromFile(L"SchracVisualize_Direct3D_11.fx", nullptr, "VS", "vs_4_0", dwShaderFlags, 0, pVSBlob.GetAddressOf()));
+    V_RETURN(DXUTCompileFromFile(L"SchracVisualize2.fx", nullptr, "VS", "vs_4_0", dwShaderFlags, 0, pVSBlob.GetAddressOf()));
 
     // Create the vertex shader
     hr = pd3dDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, pVertexShaderBox.GetAddressOf());
@@ -441,7 +441,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 
     // Compile the pixel shader
     Microsoft::WRL::ComPtr<ID3DBlob> pPSBlob;
-    V_RETURN(DXUTCompileFromFile(L"SchracVisualize_Direct3D_11.fx", nullptr, "PS", "ps_4_0", dwShaderFlags, 0, pPSBlob.GetAddressOf()));
+    V_RETURN(DXUTCompileFromFile(L"SchracVisualize2.fx", nullptr, "PS", "ps_4_0", dwShaderFlags, 0, pPSBlob.GetAddressOf()));
 
     // Create the pixel shader
     hr = pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, pPixelShaderBox.GetAddressOf());

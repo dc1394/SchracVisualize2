@@ -1,5 +1,5 @@
 ﻿================================================================================
-【 ソフト名 】SchracVisualize_Direct3D_11
+【 ソフト名 】SchracVisualize2
 【  作成者  】@dc1394
 ================================================================================
 
@@ -18,7 +18,7 @@
 ★ライセンス
 　このソフトはフリーソフトウェアです（2条項BSDライセンス）。
 --------------------------------------------------------------------------------
-　SchracVisualize_Direct3D_11
+　SchracVisualize2
 　Copyright (C) 2015-2021 @dc1394
 
 　ソースコード形式であれバイナリ形式であれ、変更の有無に関わらず、以下の条件を満
@@ -40,7 +40,7 @@
 　な損害、特別損害、懲罰的損害または結果損害のいずれに対しても一切責任を負いませ
 　ん。
 
-  Copyright (c) 2015-2019, @dc1394
+  Copyright (c) 2015-2021, @dc1394
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -65,7 +65,7 @@
   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --------------------------------------------------------------------------------
 
-　SchracVisualize_Direct3D_11にはMicrosoft社によるDXUTライブラリを使用しています。
+　SchracVisualize2にはMicrosoft社によるDXUTライブラリを使用しています。
 　こちらのライセンスは MITライセンス になります。
 
                                The MIT License (MIT)
@@ -89,8 +89,8 @@ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTIO
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-  SchracVisualize_Direct3D_11にはBoostコミュニティによるBoost C++ Librariesを使
-  用しています。こちらのライセンスは Boostライセンス になります。
+　SchracVisualize2にはBoostコミュニティによるBoost C++ Librariesを使用しています。
+　こちらのライセンスは Boostライセンス になります。
 
 /* Boost Software License - Version 1.0 - August 17th, 2003
 *
@@ -117,9 +117,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 * DEALINGS IN THE SOFTWARE.
 */
 
-　SchracVisualize_Direct3D_11にはGNU ProjectによるGNU Scientific Libraryを使用し
-　ています。こちらのライセンスは GNU General Public License になります。
+　SchracVisualize2にはGNU ProjectによるGNU Scientific Libraryを使用しています。
+　こちらのライセンスは GNU General Public License になります。
 
-  SchracVisualize_Direct3D_11には松本眞教授と斎藤睦夫さんによるSIMD-oriented
-  Fast Mersenne Twister (SFMT)を使用しています。こちらのライセンスは修正BSDライ
-  センスになります。
+　SchracVisualize2には松本眞教授と斎藤睦夫さんによるSIMD-oriented Fast Mersenne
+　Twister (SFMT)を使用しています。こちらのライセンスは修正BSDライセンスになりま
+　す。

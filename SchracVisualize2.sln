@@ -3,18 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28917.181
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXUT", "SchracVisualize_Direct3D_11\DXUT\Core\DXUT_2019_Win10.vcxproj", "{85344B7F-5AA0-4E12-A065-D1333D11F6CA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXUT", "SchracVisualize2\DXUT\Core\DXUT_2019_Win10.vcxproj", "{85344B7F-5AA0-4E12-A065-D1333D11F6CA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXUTOpt", "SchracVisualize_Direct3D_11\DXUT\Optional\DXUTOpt_2019_Win10.vcxproj", "{61B333C2-C4F7-4CC1-A9BF-83F6D95588EB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXUTOpt", "SchracVisualize2\DXUT\Optional\DXUTOpt_2019_Win10.vcxproj", "{61B333C2-C4F7-4CC1-A9BF-83F6D95588EB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4C959E18-6969-4523-88A8-05DA5B36F168}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "orbitaldensityrand", "SchracVisualize_Direct3D_11\orbitaldensityrand\orbitaldensityrand.vcxproj", "{11600813-A28B-4D36-AA83-5910A83607AE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "orbitaldensityrand", "SchracVisualize2\orbitaldensityrand\orbitaldensityrand.vcxproj", "{11600813-A28B-4D36-AA83-5910A83607AE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SchracVisualize_Direct3D_11", "SchracVisualize_Direct3D_11\SchracVisualize_Direct3D_11.vcxproj", "{D3D10008-96D0-4629-88B8-122C0256058C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SchracVisualize2", "SchracVisualize2\SchracVisualize2.vcxproj", "{D3D10008-96D0-4629-88B8-122C0256058C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{11600813-A28B-4D36-AA83-5910A83607AE} = {11600813-A28B-4D36-AA83-5910A83607AE}
 		{85344B7F-5AA0-4E12-A065-D1333D11F6CA} = {85344B7F-5AA0-4E12-A065-D1333D11F6CA}
