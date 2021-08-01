@@ -3,7 +3,7 @@
 
     Copyright © 2019-2021 @dc1394 All Rights Reserved.
     (but this is originally adapted by サンマヤ for TDXHydrogenScene.cpp from http://sammaya.garyoutensei.com/math_phys/phys_sym/monte_hydrogen.html )
-    https://tsujimotter.hatenablog.com/entry/metropolis-hastings-algorithm も参考にさせて頂きました
+    https://tsujimotter.hatenablog.com/entry/metropolis-hastings-algorithm も参考にさせて頂きました。ありがとうございます。
     This software is released under the BSD 2-Clause License.
 */
 
@@ -21,7 +21,6 @@ namespace orbitaldensityrand {
         :   Complete([this] { return complete_.load(); }, nullptr),
             Pth([this] { return std::cref(pth_); }, nullptr),
 		    Redraw(nullptr, [this](auto redraw) { return redraw_ = redraw; }),
-            //Rho_Wf_type([this] { return rho_wf_type_; }, nullptr),
             Rmax([this] { return rmax_; }, nullptr),
             Thread_end(nullptr, [this](auto thread_end) { 
 			    thread_end_.store(thread_end);
@@ -109,7 +108,7 @@ namespace orbitaldensityrand {
         using namespace boost::math;
         using namespace constants;
 
-        auto cnt = 0;
+        auto cnt = 0U;
         do {
             if (thread_end_) {
                 return;
