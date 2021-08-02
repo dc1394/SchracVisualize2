@@ -250,7 +250,8 @@ static auto constexpr IDC_COMBOBOX         = 5;
 static auto constexpr IDC_RADIOA           = 6;
 static auto constexpr IDC_RADIOB           = 7;
 static auto constexpr IDC_OUTPUT           = 8;
-static auto constexpr IDC_SLIDER           = 9;
+static auto constexpr IDC_SLIDER1          = 9;
+static auto constexpr IDC_SLIDER2          = 10;
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -682,9 +683,15 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
         Redraw();
         break;
 
-    case IDC_SLIDER:
+    case IDC_SLIDER1:
         RedrawFlagTrue();
         podr->Vertexsize(static_cast<std::vector<SimpleVertex>::size_type>((dynamic_cast<CDXUTSlider*>(pControl))->GetValue()));
+        Redraw();
+        break;
+
+    case IDC_SLIDER2:
+        RedrawFlagTrue();
+        podr->Dt(static_cast<double>((dynamic_cast<CDXUTSlider*>(pControl))->GetValue()) / 100.0);
         Redraw();
         break;
 
@@ -952,8 +959,13 @@ void RenderText(double fTime)
     {
         pTxtHelper->DrawTextLine((boost::wformat(L"CPU threads: %d") % CPUTHREADS).str().c_str());
     }
-    pTxtHelper->DrawTextLine((boost::wformat(L"Total vertices = %d") % podr->Vertexsize()).str().c_str());
+    pTxtHelper->DrawTextLine((boost::wformat(L"Total vertices = %d") % podr->Vertexsize).str().c_str());
     pTxtHelper->DrawTextLine((boost::wformat(L"Calculation time = %.3f(sec)") % calctime).str().c_str());
+    if (nornel == OrbitalDensityRand::Normal_Nelson_type::NELSON)
+    {
+        pTxtHelper->DrawTextLine((boost::wformat(L"Time step: %.3f(attosec)") % (podr->Dt)).str().c_str());
+        pTxtHelper->DrawTextLine((boost::wformat(L"Elapsed time: %.3f(femtosec)") % (podr->Elapsed_time / 1000.0)).str().c_str());
+    }
 
     pTxtHelper->End();
 }
@@ -1045,11 +1057,19 @@ void SetUI()
         }
     }
 
-    // 角度の調整
+    // 頂点数の調整
     hud.AddStatic(IDC_OUTPUT, L"Vertex size", 20, iY += 34, 125, 22);
     hud.GetStatic(IDC_OUTPUT)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
-    auto const max = nornel == OrbitalDensityRand::Normal_Nelson_type::NORMAL ? 50000000 : 10000000;
-    hud.AddSlider(IDC_SLIDER, 35, iY += 24, 125, 22, 0, max, static_cast<std::int32_t>(podr->Vertexsize));
+    auto const slider1_max = nornel == OrbitalDensityRand::Normal_Nelson_type::NORMAL ? 50000000 : 10000000;
+    hud.AddSlider(IDC_SLIDER1, 35, iY += 24, 125, 22, 0, slider1_max, static_cast<std::int32_t>(podr->Vertexsize));
+
+    if (pgd->Rho_wf_type == getdata::GetData::Rho_Wf_type::WF && nornel == OrbitalDensityRand::Normal_Nelson_type::NELSON)
+    {
+        hud.AddStatic(IDC_OUTPUT, L"Time step", 20, iY += 34, 125, 22);
+        hud.GetStatic(IDC_OUTPUT)->SetTextColor(D3DCOLOR_ARGB(255, 255, 255, 255));
+        auto const slider2_max = 100;
+        hud.AddSlider(IDC_SLIDER2, 35, iY += 24, 125, 22, 1, slider2_max, static_cast<std::int32_t>(podr->Dt) * 100);
+    }
 
     ui.SetCallback(OnGUIEvent);
 }

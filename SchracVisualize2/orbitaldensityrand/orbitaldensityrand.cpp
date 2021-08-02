@@ -19,6 +19,8 @@ namespace orbitaldensityrand {
 
 	OrbitalDensityRand::OrbitalDensityRand(std::shared_ptr<getdata::GetData> const & pgd)
         :   Complete([this] { return complete_.load(); }, nullptr),
+            Dt([this] { return dt_; }, [this](auto dt) { return dt_ = dt; }),
+            Elapsed_time([this] { return count_ * dt_; }, nullptr),
             Pth([this] { return std::cref(pth_); }, nullptr),
 		    Redraw(nullptr, [this](auto redraw) { return redraw_ = redraw; }),
             Rmax([this] { return rmax_; }, nullptr),
@@ -108,7 +110,9 @@ namespace orbitaldensityrand {
         using namespace boost::math;
         using namespace constants;
 
-        auto cnt = 0U;
+        auto const actual_dt = dt_ * ATTOSECTOAU;
+
+        count_ = 0U;
         do {
             if (thread_end_) {
                 return;
@@ -163,21 +167,21 @@ namespace orbitaldensityrand {
             auto f_z = std::cos(theta) * pgd_->dphidr(r) / (*pgd_)(r);
             f_z -= std::sin(theta) / r * dylmdtheta / ylm;
 
-            q_[0] += f_x * DT + mr_.normal_distribution_rand() * std::sqrt(DT);
-            q_[1] += f_y * DT + mr_.normal_distribution_rand() * std::sqrt(DT);
-            q_[2] += f_z * DT + mr_.normal_distribution_rand() * std::sqrt(DT);
+            q_[0] += f_x * actual_dt + mr_.normal_distribution_rand() * std::sqrt(actual_dt);
+            q_[1] += f_y * actual_dt + mr_.normal_distribution_rand() * std::sqrt(actual_dt);
+            q_[2] += f_z * actual_dt + mr_.normal_distribution_rand() * std::sqrt(actual_dt);
 
-            vertex_[cnt].Pos.x = static_cast<float>(q_[0]);
-            vertex_[cnt].Pos.y = static_cast<float>(q_[1]);
-            vertex_[cnt].Pos.z = static_cast<float>(q_[2]);
+            vertex_[count_].Pos.x = static_cast<float>(q_[0]);
+            vertex_[count_].Pos.y = static_cast<float>(q_[1]);
+            vertex_[count_].Pos.z = static_cast<float>(q_[2]);
 
-            vertex_[cnt].Color.x = 0.8f;
-            vertex_[cnt].Color.y = 0.0f;
-            vertex_[cnt].Color.z = 0.8f;
-            vertex_[cnt].Color.w = 1.0f;
+            vertex_[count_].Color.x = 0.8f;
+            vertex_[count_].Color.y = 0.0f;
+            vertex_[count_].Color.z = 0.8f;
+            vertex_[count_].Color.w = 1.0f;
 
-            cnt++;
-        } while (cnt < vertexsize_.load());
+            count_++;
+        } while (count_ < vertexsize_.load());
     }
 
 	void OrbitalDensityRand::FillSimpleVertex(std::int32_t m, std::int32_t starti, std::int32_t endi)
@@ -194,7 +198,7 @@ namespace orbitaldensityrand {
         myrandom::MyRandSfmt mr;
                 
         auto nextflag = false;
-        auto cnt = 0;
+        auto count_ = 0;
 
         do {
             if (thread_end_) {
@@ -332,16 +336,16 @@ namespace orbitaldensityrand {
                 break;
             }
 
-            vertex_[starti + cnt].Pos.x = static_cast<float>(x);
-            vertex_[starti + cnt].Pos.y = static_cast<float>(y);
-            vertex_[starti + cnt].Pos.z = static_cast<float>(z);
+            vertex_[starti + count_].Pos.x = static_cast<float>(x);
+            vertex_[starti + count_].Pos.y = static_cast<float>(y);
+            vertex_[starti + count_].Pos.z = static_cast<float>(z);
 
-            vertex_[starti + cnt].Color.x = sign > 0 ? 0.8f : 0.0f;
-            vertex_[starti + cnt].Color.y = sign < 0 ? 0.8f : 0.0f;
-            vertex_[starti + cnt].Color.z = 0.8f;
-            vertex_[starti + cnt].Color.w = 1.0f;
-            cnt++;
-		} while (cnt < (endi - starti));
+            vertex_[starti + count_].Color.x = sign > 0 ? 0.8f : 0.0f;
+            vertex_[starti + count_].Color.y = sign < 0 ? 0.8f : 0.0f;
+            vertex_[starti + count_].Color.z = 0.8f;
+            vertex_[starti + count_].Color.w = 1.0f;
+            count_++;
+		} while (count_ < (endi - starti));
 	}
 
     // #endregion privateメンバ関数

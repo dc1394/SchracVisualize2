@@ -1,7 +1,7 @@
 ﻿/*! \file orbitaldensityrand.h
     \brief OrbitalDensityRandクラスの宣言
 
-    Copyright © 2019 @dc1394 All Rights Reserved.
+    Copyright © 2019-2021 @dc1394 All Rights Reserved.
     This software is released under the BSD 2-Clause License.
 */
 
@@ -137,6 +137,18 @@ namespace orbitaldensityrand {
 
         //! A property.
         /*!
+            時間刻み（アト秒）へのプロパティ
+        */
+        utility::Property<double> Dt;
+
+        //! A property.
+        /*!
+            経過時間のカウントへのプロパティ
+        */
+        utility::Property<double> Elapsed_time;
+        
+        //! A property.
+        /*!
             スレッドへのスマートポインタのプロパティ
         */
         utility::Property<std::shared_ptr<std::thread> const&> const Pth;
@@ -196,15 +208,21 @@ namespace orbitaldensityrand {
     private:
         //! A private member variable (constant expression).
         /*!
+            アト秒から原子単位（秒）へ変換するときの定数
+        */
+        static constexpr auto ATTOSECTOAU = 0.04134137333518131;
+
+        //! A private member variable (constant expression).
+        /*!
             数値微分の刻み幅
         */
         static auto constexpr DH = 1.0E-7;
 
         //! A private member variable (constant expression).
         /*!
-            時間刻み
+            時間刻み（アト秒）の初期値
         */
-        static auto constexpr DT = 0.01;
+        static auto constexpr DT = 0.1;
 
         //! A private member variable (constant expression).
         /*!
@@ -223,6 +241,18 @@ namespace orbitaldensityrand {
             描画スレッドの作業が完了したかどうか
         */
         std::atomic<bool> complete_ = false;
+
+        //! A private member variable.
+        /*!
+            時間経過のカウント
+        */
+        std::uint32_t count_ = 0U;
+
+        //! A private member variable.
+        /*!
+            時間刻み（アト秒）
+        */
+        double dt_ = DT;
 
         //! A private member variable.
         /*!
