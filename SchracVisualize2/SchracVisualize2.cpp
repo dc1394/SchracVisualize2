@@ -115,6 +115,12 @@ CDXUTDialogResourceManager dialogResourceManager;
 
 //! A global variable.
 /*!
+    計算が開始したことを示すフラグ
+*/
+auto calcstart = true;
+
+//! A global variable.
+/*!
     描画する軌道の識別数値
 */
 auto drawdata = 1U;
@@ -130,12 +136,6 @@ double drawstarttime;
     計算終了時間
 */
 double drawendtime;
-
-//! A global variable.
-/*!
-    計算が開始したことを示すフラグ
-*/
-auto first = true;
 
 //! A global variable.
 /*!
@@ -225,12 +225,17 @@ Microsoft::WRL::ComPtr<ID3D11InputLayout> pVertexLayout;
 */
 Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShaderBox;
 
-
 //! A global variable.
 /*!
     Device settings dialog
 */
 CD3DSettingsDlg settingsDlg;
+
+//! A global variable.
+/*!
+    dialog for specific controls
+*/
+auto startup = true;
 
 //! A global variable.
 /*!
@@ -273,9 +278,10 @@ void InitApp();
 
 //! A function.
 /*!
-    テキストファイルからデータを読み込む
+    csvファイルからデータを読み込む
+    \return csvファイルを読み込んだかどうか
 */
-void ReadData();
+bool ReadData();
 
 //! A function.
 /*!
@@ -298,6 +304,7 @@ void RenderText(double fTime);
 //! A function.
 /*!
     点を描画する
+    \return CreateBufferが成功したかどうか
 */
 HRESULT RenderPoint();
 
@@ -639,17 +646,17 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
         break;
 
     case IDC_LOADNEWFILE:
-        StopDraw();
-        ReadData();
-        podr.emplace(pgd);
-        first = true;
-        nornel = OrbitalDensityRand::Normal_Nelson_type::NORMAL;
-        podr->Vertexsize(pgd->Rho_wf_type == getdata::GetData::Rho_Wf_type::RHO ? OrbitalDensityRand::RHO_VERTEXSIZE_INIT_VALUE : OrbitalDensityRand::WF_VERTEXSIZE_INIT_VALUE);
-        ::SetWindowText(DXUTGetHWND(), CreateWindowTitle().c_str());
-        hud.RemoveAllControls();
-        drawdata = 1U;
-        SetUI();
-        Redraw();
+        if (ReadData()) {
+            StopDraw();
+            podr.emplace(pgd);
+            nornel = OrbitalDensityRand::Normal_Nelson_type::NORMAL;
+            podr->Vertexsize(pgd->Rho_wf_type == getdata::GetData::Rho_Wf_type::RHO ? OrbitalDensityRand::RHO_VERTEXSIZE_INIT_VALUE : OrbitalDensityRand::WF_VERTEXSIZE_INIT_VALUE);
+            ::SetWindowText(DXUTGetHWND(), CreateWindowTitle().c_str());
+            hud.RemoveAllControls();
+            drawdata = 1U;
+            SetUI();
+            Redraw();
+        }
         break;
 
     case IDC_COMBOBOX:
@@ -869,19 +876,30 @@ HRESULT RenderPoint()
     return hr;
 }
 
-void ReadData()
+bool ReadData()
 {
     while (true) {
         try {
-            pgd.reset();
-            pgd = std::make_shared<getdata::GetData>(utility::myOpenFile());
+            if (auto const file = utility::myOpenFile(startup)) {
+                pgd.reset();
+                pgd = std::make_shared<getdata::GetData>(*file);
+                startup = false;
+                break;
+            }
+            else if (startup) {
+                ::DestroyWindow(DXUTGetHWND());
+                break;
+            }
+            else {
+                return false;
+            }
         }
-        catch (std::runtime_error const & e) {
+        catch (std::runtime_error const& e) {
             ::MessageBox(nullptr, utility::my_mbstowcs(e.what()).c_str(), L"エラー", MB_OK | MB_ICONWARNING);
-            continue;
         }
-        break;
     }
+
+    return true;
 }
 
 //! A function.
@@ -923,7 +941,7 @@ void RedrawFlagTrue()
     StopDraw();
     podr->Thread_end = false;
     podr->Redraw = true;
-    first = true;
+    calcstart = true;
 }
 
 //--------------------------------------------------------------------------------------
@@ -931,10 +949,10 @@ void RedrawFlagTrue()
 //--------------------------------------------------------------------------------------
 void RenderText(double fTime)
 {
-    if (!podr->Complete && first) {
+    if (!podr->Complete && calcstart) {
         drawstarttime = fTime;
         end = false;
-        first = false;
+        calcstart = false;
     }
     else if (podr->Complete && !end) {
         drawendtime = fTime - drawstarttime;

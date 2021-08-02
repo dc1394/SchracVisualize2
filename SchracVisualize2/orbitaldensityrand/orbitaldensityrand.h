@@ -151,7 +151,7 @@ namespace orbitaldensityrand {
         /*!
             スレッドへのスマートポインタのプロパティ
         */
-        utility::Property<std::shared_ptr<std::thread> const&> const Pth;
+        utility::Property<std::shared_ptr<std::thread> const &> const Pth;
 
         //! A property.
         /*!
@@ -175,7 +175,7 @@ namespace orbitaldensityrand {
         /*!
             頂点へのプロパティ
         */
-        utility::Property<std::vector<SimpleVertex> const&> Vertex;
+        utility::Property<std::vector<SimpleVertex> const &> Vertex;
 
         //! A property.
         /*!

@@ -1,13 +1,13 @@
 ﻿/*! \file utility.h
     \brief ユーティリティ関数の実装
 
-    Copyright © 2015-2019 @dc1394 All Rights Reserved.
+    Copyright © 2015-20 @dc1394 All Rights Reserved.
     This software is released under the BSD 2-Clause License.
 */
 
 #include "utility.h"
-#include <vector>           // for std::vector
 #include <system_error>     // for std::system_category
+#include <vector>           // for std::vector
 
 namespace utility {
     std::wstring my_mbstowcs(std::string const & mbs, std::int32_t codeMulti)
@@ -27,7 +27,7 @@ namespace utility {
         return std::wstring(wcsvec.begin(), wcsvec.end() - 1);
     }
 
-    std::string myOpenFile()
+    std::optional<std::string> myOpenFile(bool startup)
     {
         // ファイルを開く
         static std::array<wchar_t, MAX_PATH> filename_full;   // ファイル名(フルパス)を受け取る領域
@@ -38,10 +38,18 @@ namespace utility {
                 break;
             }
 
-            ::MessageBox(nullptr, L"ファイルを選択してください", L"エラー", MB_OK | MB_ICONWARNING);
+            if (startup) {
+                auto const res = ::MessageBox(nullptr, L"プログラムを終了しますか？", L"終了の確認", MB_YESNO | MB_ICONQUESTION);
+                if (res == IDYES) {
+                    return std::nullopt;
+                }
+            }
+            else {
+                return std::nullopt;
+            }
         } while (true);
 
-        return my_wcstombs(filename_full);
+        return std::make_optional(my_wcstombs(filename_full));
     }
 
     std::string my_wcstombs(std::array<wchar_t, MAX_PATH> const & wcs, std::int32_t codeMulti)
@@ -74,6 +82,7 @@ namespace utility {
         ofn.nMaxFile = MAX_PATH;				                                // lpstrFileに指定した変数のサイズ
         ofn.nMaxFileTitle = MAX_PATH;			                                // lpstrFileTitleに指定した変数のサイズ
         ofn.Flags = OFN_FILEMUSTEXIST;			                                // フラグ指定
+        ofn.lpstrInitialDir = L".\\";                                           // カレントディレクトリを現在のディレクトリにする
         ofn.lpstrTitle = title;					                                // コモンダイアログのキャプション
         ofn.lpstrDefExt = defextension; 		                                // デフォルトのファイルの種類
 

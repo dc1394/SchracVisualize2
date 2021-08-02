@@ -12,6 +12,7 @@
 
 #include <array>        // for std::array
 #include <cstdint>      // for std::int32_t
+#include <optional>     // for std::optional
 #include <string>       // for std::wstring
 #include <Windows.h>    // for MAX_PATH
 
@@ -28,9 +29,10 @@ namespace utility {
     //! A function.
     /*!
         ファイルを開く
-        \return ファイル名
+        \param startup 起動時かどうか
+        \return ファイル名（プログラムを終了する場合はnullptr）
     */
-    std::string myOpenFile();
+    std::optional<std::string> myOpenFile(bool startup);
 
     //! A function.
     /*!
@@ -51,7 +53,7 @@ namespace utility {
         \param defextension デフォルトのファイルの種類
         \return ファイル選択ダイアログの戻り値
     */
-    BOOL showFileDialog(HWND hWnd, wchar_t* filepath, wchar_t* filename, wchar_t const* title, wchar_t const* defextension);
+    BOOL showFileDialog(HWND hWnd, wchar_t * filepath, wchar_t * filename, wchar_t const * title, wchar_t const * defextension);
 
     template <typename T>
     //! A struct.
@@ -65,7 +67,7 @@ namespace utility {
             確保したメモリを安全に解放する
             \param p 確保したメモリの先頭アドレス
         */
-        void operator()(T* p) {
+        void operator()(T * p) {
             if (p) {
                 delete p;
                 p = nullptr;
