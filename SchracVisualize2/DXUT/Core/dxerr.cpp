@@ -3,7 +3,7 @@
 //
 // DirectX Error Library
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //--------------------------------------------------------------------------------------
 #include "dxut.h"
@@ -12,7 +12,7 @@
 
 #include "dxerr.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #include <ddraw.h>
 #include <d3d10_1.h>
@@ -51,14 +51,14 @@
 
 #define  CHK_ERRA(hrchk) \
         case hrchk: \
-             return L#hrchk;
+             return L## #hrchk;
 
 #define HRESULT_FROM_WIN32b(x) ((HRESULT)(x) <= 0 ? ((HRESULT)(x)) : ((HRESULT) (((x) & 0x0000FFFF) | (FACILITY_WIN32 << 16) | 0x80000000)))
 
 #define  CHK_ERR_WIN32A(hrchk) \
         case HRESULT_FROM_WIN32b(hrchk): \
         case hrchk: \
-             return L#hrchk;
+             return L## #hrchk;
 
 #define  CHK_ERR_WIN32_ONLY(hrchk, strOut) \
         case HRESULT_FROM_WIN32b(hrchk): \
@@ -3285,7 +3285,7 @@ const WCHAR* WINAPI DXGetErrorStringW( _In_ HRESULT hr )
 
 #define  CHK_ERRA(hrchk) \
         case hrchk: \
-             wcscpy_s( desc, count, L#hrchk ); break;
+             wcscpy_s( desc, count, L## #hrchk ); break;
 
 #define  CHK_ERR(hrchk, strOut) \
         case hrchk: \
@@ -3303,8 +3303,9 @@ void WINAPI DXGetErrorDescriptionW( _In_ HRESULT hr, _Out_cap_(count) WCHAR* des
     // First try to see if FormatMessage knows this hr
     LPWSTR errorText = nullptr;
 
-    DWORD result = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM |FORMAT_MESSAGE_ALLOCATE_BUFFER, nullptr, hr, 
-                                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&errorText, 0, nullptr );
+    DWORD result = FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS| FORMAT_MESSAGE_ALLOCATE_BUFFER,
+                                   nullptr, static_cast<DWORD>(hr),
+                                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPWSTR>(&errorText), 0, nullptr );
 
     if (result > 0 && errorText)
     {
@@ -3607,10 +3608,8 @@ void WINAPI DXGetErrorDescriptionW( _In_ HRESULT hr, _Out_cap_(count) WCHAR* des
 HRESULT WINAPI DXTraceW( _In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HRESULT hr,
                          _In_opt_ const WCHAR* strMsg, _In_ bool bPopMsgBox )
 {
-    WCHAR strBufferFile[MAX_PATH];
     WCHAR strBufferLine[128];
     WCHAR strBufferError[256];
-    WCHAR strBufferMsg[1024];
     WCHAR strBuffer[BUFFER_SIZE];
 
     swprintf_s( strBufferLine, 128, L"%lu", dwLine );
@@ -3635,10 +3634,12 @@ HRESULT WINAPI DXTraceW( _In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HR
 
     if( bPopMsgBox )
     {
+        WCHAR strBufferFile[MAX_PATH];
         wcscpy_s( strBufferFile, MAX_PATH, L"" );
         if( strFile )
             wcscpy_s( strBufferFile, MAX_PATH, strFile );
 
+        WCHAR strBufferMsg[1024];
         wcscpy_s( strBufferMsg, 1024, L"" );
         if( nMsgLen > 0 )
             swprintf_s( strBufferMsg, 1024, L"Calling: %ls\n", strMsg );

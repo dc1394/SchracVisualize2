@@ -3,7 +3,7 @@
 //
 // Various helper functionality that is shared between SDK samples
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkId=320437
@@ -841,7 +841,8 @@ HRESULT CDXUTResourceCache::CreateTextureFromFile( ID3D11Device* pDevice, ID3D11
     else
     {
         hr = DirectX::CreateWICTextureFromFileEx( pDevice, pContext, pSrcFile, 0,
-                                                  D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0, bSRGB,
+                                                  D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0,
+                                                  bSRGB ? DirectX::WIC_LOADER_FORCE_SRGB : DirectX::WIC_LOADER_DEFAULT,
                                                   nullptr, ppOutputRV );
     }
 
