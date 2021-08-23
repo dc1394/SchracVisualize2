@@ -894,8 +894,11 @@ bool ReadData()
                 return false;
             }
         }
-        catch (std::runtime_error const& e) {
+        catch (std::runtime_error const & e) {
             ::MessageBox(nullptr, utility::my_mbstowcs(e.what()).c_str(), L"エラー", MB_OK | MB_ICONWARNING);
+        }
+        catch (std::invalid_argument const &) {
+            ::MessageBox(nullptr, L"csvファイルが異常です！", L"エラー", MB_OK | MB_ICONWARNING);
         }
     }
 
