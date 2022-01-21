@@ -19,11 +19,10 @@
 #include "orbitaldensityrand/orbitaldensityrand.h"
 #include "orbitaldensityrand/utility/utility.h"
 #include <cstdint>                                  // for std::int32_t
+#include <format>                                   // for std::format
 #include <numeric>                                  // for std::iota
 #include <optional>                                 // for std::optional
 #include <boost/assert.hpp>                         // for boost::assert
-#include <boost/cast.hpp>                           // for boost::numeric_cast
-#include <boost/format.hpp>			                // for boost::wformat
 #include <wrl.h>					                // for Microsoft::WRL::ComPtr
 
 #pragma warning( disable : 4100 )
@@ -69,13 +68,13 @@ static auto constexpr MAGNIFICATION = 1.2f;
 /*!
     頂点数の初期値（通常）
 */
-static std::vector<SimpleVertex>::size_type const PHI_VERTEXSIZE_INIT_VALUE = 1000000;
+static std::vector<SimpleVertex>::size_type constexpr PHI_VERTEXSIZE_INIT_VALUE = 1000000;
 
 //! A global variable (constant).
 /*!
     頂点数の初期値（通常）
 */
-static std::vector<SimpleVertex>::size_type const RHO_VERTEXSIZE_INIT_VALUE = 5000000;
+static std::vector<SimpleVertex>::size_type constexpr RHO_VERTEXSIZE_INIT_VALUE = 5000000;
 
 //! A global variable (constant).
 /*!
@@ -524,7 +523,7 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 
     // Update constant buffer that changes once per frame
     D3D11_MAPPED_SUBRESOURCE MappedResource;
-    auto const hr = pd3dImmediateContext->Map(pCBChangesEveryFrame.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource);
+    pd3dImmediateContext->Map(pCBChangesEveryFrame.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource);
     auto pCB = reinterpret_cast<CBChangesEveryFrame*>(MappedResource.pData);
     XMStoreFloat4x4(&pCB->mWorld, XMMatrixTranspose(mWorld));
     XMStoreFloat4x4(&pCB->mView, XMMatrixTranspose(mView));
@@ -978,14 +977,14 @@ void RenderText(double fTime)
     pTxtHelper->DrawTextLine(DXUTGetDeviceStats());
     if (nornel == OrbitalDensityRand::Normal_Nelson_type::NORMAL)
     {
-        pTxtHelper->DrawTextLine((boost::wformat(L"CPU threads: %d") % CPUTHREADS).str().c_str());
+        pTxtHelper->DrawTextLine(std::format(L"CPU threads: {:d}", CPUTHREADS).c_str());
     }
-    pTxtHelper->DrawTextLine((boost::wformat(L"Total vertices = %d") % podr->Vertexsize).str().c_str());
-    pTxtHelper->DrawTextLine((boost::wformat(L"Calculation time = %.3f(sec)") % calctime).str().c_str());
+    pTxtHelper->DrawTextLine(std::format(L"Total vertices = {:d}", static_cast<std::int32_t>(podr->Vertexsize)).c_str());
+    pTxtHelper->DrawTextLine(std::format(L"Calculation time = {:.3f}(sec)", calctime).c_str());
     if (nornel == OrbitalDensityRand::Normal_Nelson_type::NELSON)
     {
-        pTxtHelper->DrawTextLine((boost::wformat(L"Time step: %.3f(attosec)") % (podr->Dt)).str().c_str());
-        pTxtHelper->DrawTextLine((boost::wformat(L"Elapsed time: %.3f(femtosec)") % (podr->Elapsed_time / 1000.0)).str().c_str());
+        pTxtHelper->DrawTextLine(std::format(L"Time step: {:.3f}(attosec)", podr->Dt).c_str());
+        pTxtHelper->DrawTextLine(std::format(L"Elapsed time: {:.3f}(femtosec)", podr->Elapsed_time / 1000.0).c_str());
     }
 
     pTxtHelper->End();

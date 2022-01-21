@@ -15,7 +15,7 @@
   <ItemGroup>
     <None Include="..\..\DXUT\Optional\directx.ico" />
     <None Include="..\README.md" />
-    <None Include="SchracVisualize_Direct3D_11.fx" />
+    <None Include="SchracVisualize2.fx" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="document">

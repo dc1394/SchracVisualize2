@@ -6,9 +6,8 @@
 ★これは何？
 　「Schrac」の計算結果のアウトプットファイルを読み込み、可視化するプログラムです。
 　実行には、以下が必要です。
-　・Visual Studio 2015、2017、および 2019 用 Microsoft Visual C++ 再頒布可能パッ
-　　ケージ x86版
-　（ https://support.microsoft.com/ja-jp/help/2977003/the-latest-supported-visual-c-downloads
+　・Visual Studio 2015、2017、2019、および2022の Microsoft Visual C++ 再頒布可能
+　　パッケージ x64版（ https://docs.microsoft.com/ja-jp/cpp/windows/latest-supported-vc-redist?view=msvc-170
 　　から、「vcredist_x64.exe」をダウンロードしてインストールしてください）。
 
 ★使い方
