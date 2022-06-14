@@ -107,9 +107,6 @@ namespace orbitaldensityrand {
 
     void OrbitalDensityRand::FillSimpleVertex(std::int32_t m)
     {
-        using namespace boost::math;
-        using namespace constants;
-
         auto const actual_dt = dt_ * ATTOSECTOAU;
 
         count_ = 0U;
