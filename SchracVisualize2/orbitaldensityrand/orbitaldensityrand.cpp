@@ -125,7 +125,7 @@ namespace orbitaldensityrand {
                 continue;
             }
 
-            double phi = 0.0;
+            auto phi = 0.0;
             if (std::fabs(q_[1]) < THRESHOLD) {
                 if (q_[0] < 0.0) {
                     phi = boost::math::constants::pi<double>();
